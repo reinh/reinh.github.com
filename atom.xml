@@ -1,0 +1,2218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[reinh.com]]></title>
+  <link href="http://reinh.github.com/atom.xml" rel="self"/>
+  <link href="http://reinh.github.com/"/>
+  <updated>2013-01-15T15:14:10-08:00</updated>
+  <id>http://reinh.github.com/</id>
+  <author>
+    <name><![CDATA[Rein Henrichs]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Turing Machine Simulator With Ruby (Part&nbsp;1)]]></title>
+    <link href="http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html"/>
+    <updated>2011-09-03T17:41:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1</id>
+    <content type="html"><![CDATA[<p>To better understand Turing&#8217;s machine and its contributions to mathematics and
+computer science, we will build a simulator in Ruby. This simulator will take a
+description of the machine&#8217;s configuration, create a model of the machine, and
+run through its steps. We will be able to observe the action of the head and
+changes to the tape at each step. Hopefully this will serve to illuminate some
+aspects of Turing&#8217;s machine that might otherwise be less accessible.</p>
+
+<!--more-->
+
+
+<p>Although the Turing machine is often thought of as prefiguring later computer
+science innovations such as the state machine, its original purpose was quite
+different. Turing created his machine in an attempt to understand the limits of
+mechanical computation. That is to say, the limits of <em>computability</em>. The
+paper that introduced the Turing machine, published in 1936, refers to
+&#8220;computable numbers&#8221; and their use in solving David Hilbert&#8217;s <em><a href="http://en.wikipedia.org/wiki/Entscheidungsproblem">Entscheidungsproblem</a></em>, or
+&#8220;decision problem&#8221;.</p>
+
+<h2>Turing&#8217;s Marvelous Machine</h2>
+
+<p>Informally, a Turing machine is a mathematical model of a machine that
+mechanically operates on a tape. This tape contains squares where the machine
+can read or print a symbol using a tape head. The machine can also move left
+and right over the tape, one square at a time.  The machine&#8217;s operation is
+fully determined by a list of elementary instructions such as &#8220;in state 42, if
+the symbol seen is 0, print a 1; if the symbol seen is 1, shift to the right
+and change into state 17; in state 17, if the symbol seen is 0, print a 1 and
+change into state 6;&#8221; etc. Turing called these instructions <em>m-configurations</em>.
+Modern computer scientists typically refer to them as states (as the Turing
+machine is a type of <a href="http://en.wikipedia.org/wiki/Finite-state_machine">Finite-state machine</a>). I will refer to
+them interchangeably as &#8220;instructions&#8221; or &#8220;states&#8221;. Turing, in his paper,
+labeled these instructions using gothic script lower-case letters.  We will
+simply use lower-case letters.</p>
+
+<p>A bit more formally, a Turing machine can be specified as the 3-tuple <script type="math/tex">M= \langle Q, \Gamma, I \ \rangle</script>. <script type="math/tex">Q</script> is a finite, non-empty set of <em>states</em> where <script type="math/tex">q_0 \in Q</script> is the first state; <script type="math/tex">\Gamma</script> is a finite, non-empty set of <em>tape alphabet/symbols</em> with <script type="math/tex">S_0 \in \Gamma</script> representing a blank, also called <script type="math/tex">None</script> (the only symbol allowed to occur on the tape infinitely often at any step during the computation); and <script type="math/tex">I</script> is a finite, non-emtpy set of instructions. An instruction <script type="math/tex">i \in I</script> can be defined with the 5-tuple, or <em>quint</em>, <script type="math/tex">\langle q_i, S_j, S_k/N/E, L/R, q_m \rangle</script>, which consists of the following:</p>
+
+<ul>
+<li><script type="math/tex">q_i \in Q </script>, the current state.</li>
+<li><script type="math/tex">S_j \in \Gamma</script>, the symbol scanned.</li>
+<li>The symbol to be printed
+
+<ul>
+<li><script type="math/tex">S_k \in \Gamma</script>, print the symbol <script type="math/tex">S_k</script></li>
+<li><script type="math/tex">N</script>, equivalent to <script type="math/tex">S_j</script>, indicates a &#8220;noop&#8221; (alternatively, print the current symbol again).</li>
+<li><script type="math/tex">E</script>, equivalent to <script type="math/tex">S_0</script>, print a blank (erasure).</li>
+</ul>
+</li>
+<li>A head movement instruction:
+
+<ul>
+<li><script type="math/tex">L</script>, move the head left.</li>
+<li><script type="math/tex">R</script>, move the head right.</li>
+</ul>
+</li>
+<li><script type="math/tex">q_m \in Q</script>, the new state.</li>
+</ul>
+
+
+<p>This is a bit less formal than the definition used by Hopcroft and Ullman, for
+instance, but should suffice for our purposes.</p>
+
+<h2>Our First Turing Machine</h2>
+
+<p>With the formal definition out of the way, let&#8217;s turn to Turing&#8217;s first
+machine, which computes the sequence <em>0 1 0 1 0 1&hellip;</em>. This machine&#8217;s 3-tuple looks like this:</p>
+
+<ul>
+<li><em>Q</em>, the states: <em>{ b, c, e, f }</em></li>
+<li><em>&Gamma;</em>, the symbols: <em>{ 0, 1}</em></li>
+<li><em>I</em>, the instructions: <script type="math/tex"> \{ \langle b, None, 0, R, c \rangle,  \langle c, None, N, R, e \rangle,  \langle e, None, 1, R, f \ \rangle,  \langle f, None, N, R, b \rangle \} </script></li>
+</ul>
+
+
+<p>In Turing&#8217;s original table form, these same instructions are represented as:</p>
+
+<table class="text-center">
+    <tbody>
+        <tr> <th colspan="2">Configuration</th> <th colspan="2">Behavior</th> </tr>
+        <tr> <th>m-configuration</th> <th>Tape symbol</th> <th>Tape operations</th> <th>Final m-configuration</th> </tr>
+        <tr> <td>b</td> <td>None</td> <td>P0, R</td> <td>c</td> </tr>
+        <tr> <td>c</td> <td>None</td> <td>R</td>     <td>e</td> </tr>
+        <tr> <td>e</td> <td>None</td> <td>P1, R</td> <td>f</td> </tr>
+        <tr> <td>f</td> <td>None</td> <td>R</td>     <td>b</td> </tr>
+    </tbody>
+</table>
+
+
+<p>Turing describes the above table as follows:</p>
+
+<blockquote><p>This [example] table (and all succeeding tables of the same kind) is to be understood to mean that for a configuration described in the first two columns the operations in the third column are carried out successively, and the machine then goes over into the m-configuration in the final column</p></blockquote>
+
+
+<h2>Once Again, With ASCII</h2>
+
+<p>For our Turing machine simulator, I decided to use an ASCII representation of
+the Turing machine&#8217;s instructions. In this format, the instructions look like
+this:</p>
+
+<figure class='code'><figcaption><span>Turing&#8217;s First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>b, None, P0R, c
+</span><span class='line'>c, None, R,   e
+</span><span class='line'>e, None, P1R, f
+</span><span class='line'>f, None, R,   b</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The m-configurations (instructions) in my machines will begin with <em>b</em>, just as Turing&#8217;s did. (I believe he used <em>b</em> for <em>begin</em>.)</p>
+
+<p>The BNF grammar for this representation is:</p>
+
+<pre><code>&lt;instruction&gt; ::= &lt;ident&gt; "," &lt;symbol&gt; "," &lt;operation&gt; "," &lt;ident&gt; &lt;EOL&gt;
+      &lt;ident&gt; ::= &lt;char&gt;
+      &lt;symbol ::= &lt;char&gt; | "None"
+  &lt;operation&gt; ::= &lt;movement&gt; | &lt;print&gt; &lt;movement&gt;
+      &lt;print&gt; ::= 'P' &lt;char&gt;
+    &lt;movement ::= 'R' | 'L'
+</code></pre>
+
+<h2>Representing An Instruction</h2>
+
+<p>To begin modelling our simulated Turing machine, we need some way to represent
+instructions internally. We&#8217;ll use Ruby arrays as tuples and Ruby symbols as,
+well, symbols (with the exception of <em>None</em>, <em>0</em> and <em>1</em>, which will be be
+represented as <code>nil</code> and the integers <code>0</code> and <code>1</code>, respectively). Tape operations will be represented as another array of tuples, to wit: <em>Pn</em> as <code>[ :print, n ]</code>, <em>E</em> as <code>[ :erase ]</code>, <em>L</em> as <code>[ :left ]</code>, and <em>R</em> as <code>[ :right ]</code>.</p>
+
+<p>Here is our Ruby representation of the above instruction list:</p>
+
+<figure class='code'><figcaption><span>Turing&#8217;s First Example (Ruby)  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:b</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">0</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:c</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:c</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:e</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:e</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">1</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:f</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:f</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:b</span> <span class="o">]</span>
+</span><span class='line'><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Parsing An Instruction</h2>
+
+<p>Writing a parser for the ASCII instruction format is a fun little exercise. As
+a Turing machine is a finite-state machine, it should be no surprise that this
+specification grammar forms a regular language (which can be accepted with a
+finite-state machine). This means that we can parse it with regular
+expressions&#8212;without having two problems! (Actually, we&#8217;ll use the comma
+separation to make tokenization a bit easier with <code>String#split</code>, but we&#8217;re
+getting ahead of ourselves.)</p>
+
+<p>We&#8217;ll use a <code>Turing::Parser</code> class to parse the entire specification. It will
+split lines and delegate to <code>Turing::Parser::Line</code> class to parse individual
+instruction lines. This in turn will need to parse (lex) individual tokens into a Ruby
+representation. We&#8217;ll start there:</p>
+
+<figure class='code'><figcaption><span>parse_token()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">case</span> <span class="n">token</span>
+</span><span class='line'>    <span class="k">when</span> <span class="s2">&quot;None&quot;</span> <span class="k">then</span> <span class="kp">nil</span>
+</span><span class='line'>    <span class="k">when</span> <span class="s2">&quot;0&quot;</span>    <span class="k">then</span> <span class="mi">0</span>
+</span><span class='line'>    <span class="k">when</span> <span class="s2">&quot;1&quot;</span>    <span class="k">then</span> <span class="mi">1</span>
+</span><span class='line'>    <span class="k">else</span> <span class="n">token</span><span class="o">.</span><span class="n">intern</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will take a token like &#8220;None&#8221; and return its Ruby representation, in this
+case <code>nil</code>. Bits will be converted to Ruby Integers (close enough). Characters
+will be interned (converted to Ruby Symbols).</p>
+
+<p>Next, we&#8217;ll deal with the operations. We can write a simple string scanner that
+will lex the operation string and turn it into a list of operation tuples (as
+described above).</p>
+
+<figure class='code'><figcaption><span>parse_operations()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_operations</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">actions</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="sr">/P.|R|L|E/</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">action</span><span class="o">|</span>
+</span><span class='line'>      <span class="k">case</span> <span class="n">action</span>
+</span><span class='line'>      <span class="k">when</span> <span class="sr">/P(.)/</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:print</span><span class="p">,</span> <span class="n">parse_token</span><span class="p">(</span><span class="vg">$1</span><span class="p">)</span><span class="o">]</span>
+</span><span class='line'>      <span class="k">when</span> <span class="s2">&quot;R&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:right</span><span class="o">]</span>
+</span><span class='line'>      <span class="k">when</span> <span class="s2">&quot;L&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:left</span><span class="o">]</span>
+</span><span class='line'>      <span class="k">when</span> <span class="s2">&quot;E&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:empty</span><span class="o">]</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we can parse each instruction line by converting tokens with <code>parse_token</code>
+and converting the operations with <code>parse_operations</code> (which, of course, uses
+<code>parse_token</code> itself to lex the tokens it scans):</p>
+
+<figure class='code'><figcaption><span>parse_instruction()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@line</span> <span class="o">=</span> <span class="n">line</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_instruction</span>
+</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">operations</span> <span class="o">=</span> <span class="n">parse_operations</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">end_state</span>  <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="o">[</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Using A Struct For Instructions</h2>
+
+<p>We can add a bit of semantic value to the tuples we use to represent machine
+instructions by wrapping them in a struct. In this way, the struct is
+functioning like an intermediate data type. The struct will also make it easier
+to unpack specific values out of the tuple. Structs also have the useful
+property of duck typing as arrays (through the use of <code>to_ary</code>). You can even
+splat them, which will come in handy later.</p>
+
+<figure class='code'><figcaption><span>Turing::Machine::Instruction  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:state</span><span class="p">,</span> <span class="ss">:symbol</span><span class="p">,</span> <span class="ss">:operations</span><span class="p">,</span> <span class="ss">:end_state</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_instruction</span>
+</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">operations</span> <span class="o">=</span> <span class="n">parse_operations</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">end_state</span>  <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Parsing The Machine Specification</h2>
+
+<p>Now that we can parse in individual line, parsing the entire specification is
+just a matter of mapping lines to their parsed version:</p>
+
+<figure class='code'><figcaption><span>parse_specification()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">machine_spec</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@machine_spec</span> <span class="o">=</span> <span class="n">machine_spec</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_specification</span>
+</span><span class='line'>    <span class="vi">@machine_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="no">Line</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">parse_instruction</span> <span class="p">}</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>That&#8217;s (Not) All, Folks</h2>
+
+<p>In upcoming parts, we&#8217;ll use these instructions to form the basis of our Turing
+machine&#8217;s configuration system; we&#8217;ll implement the machine&#8217;s
+tape and tape head, which will allow us to step through its execution; and we&#8217;ll add a
+simple renderer that will print out the machine&#8217;s operations so we can follow along.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Ch-Ch-Ch-Changes]]></title>
+    <link href="http://reinh.github.com/blog/2009/09/21/ch-ch-ch-changes.html"/>
+    <updated>2009-09-21T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2009/09/21/ch-ch-ch-changes</id>
+    <content type="html"><![CDATA[<p>A couple months ago, I resigned my position at Hashrocket. This was not an easy
+decision for me. Working with the rocketeers has been a very fulfilling and
+edifying experience. The people at Hashrocket are passionate about what they do
+and extremely competent. I was given challenging and rewarding
+responsibilities. Hashrocket was a great job and I would recommend it to
+anyone. Why, then, did I chose to leave?</p>
+
+<!--more-->
+
+
+<p>In the end, it came down to a need for personal growth. At Hashrocket, I have
+had the opportunity to work with interesting clients on interesting projects,
+to lead a number of talented development teams and to consult on Rails
+development and Agile methodologies to large businesses. Thanks to Hashrocket,
+I have expanded my core competencies and matured as a developer. Certainly I
+could have stayed with Hashrocket and continued this process. There was more to
+do and more to learn. In the end, though, I felt that it was time to for me to
+take on a new set of challenges. My friend and former boss, Obie Fernandez, has
+been wonderfully supportive of me in this and I owe him a great debt of
+gratitude. I am happy to say that my departure from Hashrocket has been
+entirely amicable. They are a great bunch, one and all, and I am fortunate to
+have worked with them.</p>
+
+<p>As a consultant for the past eight years, both freelance and with Hashrocket, I
+have worked with many clients. This work has been more or less successful, my
+clients have been more or less happy, and the work has been more or less
+satisfying, but there is a common factor in its transient nature. I work on a
+project for weeks or months, provide as much value as my abilities allow, and
+then move on to another project once my role is complete. Consultants rarely
+experience the satisfaction and sense of accomplishment of a job well done, the
+rewards of the successful completion of a long and often arduous project life
+cycle.</p>
+
+<p>So, to make a long story short, I wanted to find a project that I could call
+home. I wanted to feel a sense of ownership in the project and its outcome. I
+also wanted to learn new skills and develop new competencies. The problem is
+that I didn&#8217;t yet know where home was, so I decided to start by taking some
+time off and then sort of figure things out from there. This was risky,
+especially in our current economic climate. Luckily, I&#8217;ve never been shy about
+making such decisions. After all, I love a good adventure, and adventures
+always entail a certain amount of risk.</p>
+
+<p>During my vacation, I spent a lot of time playing piano and writing music. It
+felt good to give my creative muscles some much-needed exercise. I assessed my
+career and my goals. I read a lot. I played some video games. I quickly found,
+however, that living without a
+&#8221;<a href="http://37signals.com/svn/posts/1930-mojito-island-is-a-mirage">dedicated purpose</a>&#8221;
+was less than satisfying. I was not happy leaving my tools in
+the corner to gather dust: they needed to be used. So, how best to use them?</p>
+
+<p>I decided, after some consideration, that what I wanted was the opportunity to
+shape the destiny of a project that I believed in. I wanted to do more than sit
+behind a desk and code. Luckily, I was presented with just such an opportunity
+only a few weeks after leaving Hashrocket. Rick Bradley, a good friend of mine
+and an excellent developer, had a client who was looking for a full-time hire.
+I was reluctant to become Yet Another Developer but I decided to look into it.
+I&#8217;m sure glad I did: the position turned out to be just what I was looking for.</p>
+
+<p>The client was <a href="http://reductivelabs.com/">Reductive Labs</a>, the
+company behind <a href="http://reductivelabs.com/trac/puppet/" title="puppet -
+  Trac">Puppet</a>, the Ruby-based configuration management tool. This in and
+of itself was interesting. The Puppet codebase covers a large area both
+topographically and conceptually. It has a significant installation base and a
+large open source community. It would be a challenging project to work on and a
+welcome test of my abilities.</p>
+
+<p>I don&#8217;t have a Computer Science background. I&#8217;ve never taken any courses in
+programming. I am entirely self-taught. Puppet, on the other hand, has a lot of
+Serious Business going on: a parser-compiler, a graphing library, client-server
+systems, and so on. I have experience in some of these areas, but in others I
+have only a basic theoretical knowledge gleaned by way of an intense curiosity
+and a love of reading. I had read the <a
+  href="http://dragonbook.stanford.edu/">Dragon Book</a>, for instance, but I
+had no experiential background in language design or writing parsers and
+compilers. Luckily, my lack of a formal education was not a barrier to entry
+(nor should it be if you have the skills needed to execute or the ability to
+acquire them, but that&#8217;s a topic for another post).</p>
+
+<p>I spent a week in Portland getting to know the code and the company. While
+Puppet is older than Rails, the code has until recently been under the sole
+stewardship of Reductive founder and CEO Luke Kanies. As a company, Reductive
+is small and young, but the technology is relatively mature. This is an
+interesting combination of both the pioneering spirit of a startup and the
+stability of an established open source project.</p>
+
+<p>During the day, I spent my time pairing with Luke and talking with the founders
+about their plans for Reductive Labs and Puppet. Luke has a piercing
+intelligence and a compelling vision for the future of both Puppet and
+Reductive Labs itself. I quickly saw that I would not just be yet another a
+developer, rather that I would also have the opportunity to lead teams,
+collaborate with a large and active open source community, and even more
+importantly, to help Luke and the rest of the Reductive team make design and
+strategy decisions that would inform the growth of both Puppet and the company.
+Plus, I would be &#8220;forced&#8221; to relocate to Portland, one of my favorite cities.
+Bonus.</p>
+
+<p>Apparently my visit was a success: I&#8217;m pleased to say that Luke offered me a
+position immediately after my trip and I accepted just as quickly. As I grow
+into my new responsibilities at Reductive, I find that they scale well with my
+abilities. Luke seems happy to let me do what I&#8217;m good at and I enjoy the
+opportunity to carve out my own role within a growing company. Most
+importantly, I feel like I have the opportunity to accomplish something
+significant. Nothing matters more to my sense of fulfillment and satisfaction.</p>
+
+<p>My faithful readers have most likely been lamenting this blog&#8217;s recent lack of
+content. Hopefully my little story helps explain this conspicuous absence.
+Expect more posts in the near future. I&#8217;ve got plenty to talk about.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Simplify Your Dev Environment With Passenger&nbsp;Pane]]></title>
+    <link href="http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html"/>
+    <updated>2009-04-17T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane</id>
+    <content type="html"><![CDATA[<p>On OS X? Develop web applications with Ruby? Want drag-and-drop and
+point-and-click development server management? Then you need Passenger Pane.
+We&#8217;ll walk you through the installation process and show you how to get a
+simple Rack application up and running. Thanks to
+<a href="http://jasonnoble.org">Jason Noble</a> for his help getting everything working.</p>
+
+<!--more-->
+
+
+<p>Passenger Pane is an OS X preference pane designed to work in concert with
+Phusion Passenger and your OS X Leopard&#8217;s default Apache2 installation (the
+same one that serves your Web Sharing). Setup is pretty simple and will
+probably take about 10 minutes.</p>
+
+<p>Here&#8217;s what we&#8217;re going to do:</p>
+
+<ol>
+<li>Install Phusion Passenger</li>
+<li>Install Passenger Pane</li>
+<li>Serve a &#8220;Hello World!&#8221; Rack endpoint</li>
+<li>Profit!</li>
+</ol>
+
+
+<h2>Install Phusion Passenger</h2>
+
+<p><a href="http://www.modrails.com">Phusion Passenger</a> is the (not so) new hotness in the
+Rails deployment world. Phusion is great for serving Rails applications via
+Apache in production (especially in concert with Rails Enterprise Edition,
+which provides a 33% memory savings over standard MRI Ruby), but it&#8217;s also
+great for simplifying your development environment.</p>
+
+<p>The Phusion team have done a great job on the passenger install. Here are the
+<a href="http://www.modrails.com/install.html">official installation instructions</a>.
+We&#8217;ll repeat them here for the sake of convenience.</p>
+
+<ol>
+<li><p>Open a Terminal window.</p></li>
+<li><p>Install the passenger gem:</p>
+
+<pre><code>sudo gem install passenger
+</code></pre></li>
+<li><p>Install the passenger apache2 module:</p>
+
+<pre><code>sudo passenger-install-apache2-module
+</code></pre></li>
+<li><p>Include the module and some supporting configuration settings into an apache conf file. The code will be provided by the passenger install script.</p></li>
+<li><p>Finally, add a <code>Directory</code> directive to your apache2 config that
+allows access to the directory where your app source codes are located. You
+can put this at the bottom of your <code>passenger.conf</code> file
+(replace my source directory with yours):</p>
+
+<pre><code>&lt;Directory /Users/reinh/code/&gt;
+  Order Allow,Deny
+  Allow from all
+&lt;/Directory&gt;
+</code></pre></li>
+</ol>
+
+
+<p><strong>Note</strong>: We put the passenger apache configuration in
+<code>/etc/apach2/other/passenger.conf</code> (a file we created). The default apache2
+<code>httpd.conf</code> imports all <code>.conf</code> files in <code>/etc/apache2/other</code>.</p>
+
+<h2>Install Passenger Pane</h2>
+
+<p><a href="http://www.fngtps.com/2008/06/putting-the-pane-back-into-deployment">Passenger Pane</a>
+gives you a Preference Pane that lets you add, remove and manage apps deployed
+on Phusion Passenger. Drag-and-drop to serve a new app and restart with a
+single click &mdash; it even provides host entries for each app so you don&#8217;t
+have to mess with virtual hosts or your hosts file. This is great for serving
+multiple applications simultaneously or just generally being awesome.</p>
+
+<p>Installation is simple. Download the preference pane from
+<a href="http://www.fngtps.com/2008/06/putting-the-pane-back-into-deployment">their homepage</a>
+and double-click to install. If you installed Passenger correctly (as above),
+this should just work. If not, look for errors in Console.app or a helpful
+notice in the preference pane and ask for help on the
+<a href="http://groups.google.com/group/phusion-passenger">Passenger forums</a> or in the
+<code>#passenger</code> channel on <code>irc.freenode.net</code>.</p>
+
+<p>After installing Passenger Pane, you will need to restart Apache. The simplest
+way to do this on OS X is to open the Sharing preference pane and uncheck and
+recheck Web Sharing.</p>
+
+<h2>Serve A &#8220;Hello World!&#8221; Rack Endpoint</h2>
+
+<p>Let&#8217;s test that everything is working by creating a simple
+<a href="http://rack.rubyforge.org/">Rack</a> &#8220;Hello World!&#8221; endpoint.</p>
+
+<ol>
+<li><p>Install <code>rack</code>:</p>
+
+<pre><code>sudo gem install rack
+</code></pre></li>
+<li><p>Create a new directory called <code>rack-hello-world</code>.</p></li>
+<li><p>Add a file inside it called <code>config.ru</code> with these contents:</p>
+
+<p>&#8220;` ruby</p>
+
+<pre><code>run lambda{|env| [200, {"Content-Type" =&gt; "text/plain"}, ["Hello World!"]]}
+</code></pre>
+
+<p>&#8220;`</p></li>
+<li><p>Create a <code>public</code> directory inside <code>rack-hello-world</code> (you&#8217;ll see why later).</p></li>
+<li><p>Drag the <code>rack-hello-world</code> folder into your Passenger Pane panel (if
+you&#8217;re using TextMate, you can drag it from the project panel). You will
+probably need to click the lock first to allow modifications.</p></li>
+<li><p>Browse to <a href="http://rack-hello-world.local">http://rack-hello-world.local</a> and behold the awesome!</p></li>
+<li><p>Profit!!!</p></li>
+</ol>
+
+
+<p>If you&#8217;ve done this correctly, your Passenger Pane should look similar to this:</p>
+
+<p><img class="none" src="http://reinh.com/images/passenger_pane.png"></p>
+
+<p>Your browser should be showing you your glorious &#8220;Hello World!&#8221; homepage.</p>
+
+<p>Now you can drag in the app folders of any Rails, Merb, Sinatra or Ramaze
+applications and have them instantly served by Passenger. In fact, any Ruby web
+application that can run on Rack can be run in Passenger Pane. How&#8217;s that for a
+painless local development environment?</p>
+
+<p><strong>Note:</strong> Why (I hear you asking) did we create a public directory? The answer is
+that Apache expects to serve a public directory and will fail if one is not
+found under the root of the app you&#8217;re serving. If you had not created the
+directory, you would have to look at your apache error log, which is usually located at
+<code>/var/log/apache2/error_log</code>, to find out what went wrong.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[A Git Workflow for Agile Teams]]></title>
+    <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
+    <updated>2009-03-02T00:00:00-08:00</updated>
+    <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
+    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+bugs while keeping a clean and sane history.</p>
+
+<p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
+Agile mentoring and training. Git gives us the flexibility to design a version
+control workflow that meets the needs of either a fully Agile team or a team
+that is transitioning towards an Agile process.</p>
+
+<!--more-->
+
+
+<p>There are many usable git workflows. Indeed, git is really &#8220;a tool for
+designing VCS workflows&#8221; rather than a Version Control System itself. Or, as
+Linus would say, git is just a stupid content tracker.</p>
+
+<p>This is by no means a normative document or my attempt to define The One True
+Workflow. I have found this workflow to be productive and relatively painless,
+especially for teams that are still learning and transitioning towards a more
+Agile process. I invite you to comment below and describe the git workflow that
+works best for you.</p>
+
+<h2>Credits</h2>
+
+<p>Anyone interested in using git in an Agile environment should read Josh
+Susser&#8217;s <cite>Agile Git and the Story Branch Pattern</cite>. This workflow
+is based largely on his.</p>
+
+<p>The process of squashing commits into more atomic and incremental units has
+been described by Justin Reagor in <cite>A &#8220;Squash&#8221; WorkFlow in Git</cite>.
+Justin&#8217;s post also references a <code>git rebase -i</code> walkthrough by MadCoder
+that provides a good explanation the interactive rebase process.</p>
+
+<p>Thanks also to <a href="http://www.rickbradley.com/">Rick Bradley</a> of <a href="http://www.ogtastic.com/">OG Consulting</a>
+and <a href="http://blog.hasmanythrough.com/">Josh Susser</a> of <a href="http://pivotallabs.com">Pivotal Labs</a>
+for many fruitful and often hilarious discussions about git, Agile and ponies.</p>
+
+<h2>Feature Development</h2>
+
+<p>Our git feature development workflow consists of these steps:</p>
+
+<ol>
+<li>Pull to update your local master</li>
+<li>Check out a feature branch</li>
+<li>Do work in your feature branch, committing early and often</li>
+<li>Rebase frequently to incorporate upstream changes</li>
+<li>Interactive rebase (squash) your commits</li>
+<li>Merge your changes with master</li>
+<li>Push your changes to the upstream</li>
+</ol>
+
+
+<p>First, and while in your master branch (<code>git checkout master</code>), pull in the
+most recent changes:</p>
+
+<pre><code>git pull origin master
+</code></pre>
+
+<p>This should never create a merge commit because we are never working directly
+in master.</p>
+
+<p><em>NB:</em> Whenever you perform a pull, merge or rebase, make sure that you
+run tests directly afterwards. Git may not show any conflicts but that doesn&#8217;t
+mean that two changes are compatible. Also run tests before you commit (of
+course).</p>
+
+<p>We begin with the topmost available story in <a href="http://pivotaltracker.com">Pivotal Tracker</a>.
+Let&#8217;s say that it&#8217;s <em>#3275: User Can Add A
+Comment To a Post</em>. First, check out a feature branch named with the story id
+and a short, descriptive title:</p>
+
+<pre><code>git checkout -b 3275-add-commenting
+</code></pre>
+
+<p>The id allows us to easily track this branch back to the story that spawned it.
+The title is there to give us humans a little hint as to what&#8217;s in it. Do some
+work on this branch, committing early and often (for instance, whenever your
+tests pass). Rebase against the upstream frequently to prevent your branch from
+diverging significantly:</p>
+
+<pre><code>git fetch origin master
+git rebase origin/master
+</code></pre>
+
+<p><em>NB:</em> This is often done by checking master out and pulling, but this method
+requires extra steps:</p>
+
+<pre><code>git checkout master
+git pull
+git checkout 3275-add-commenting
+git rebase master
+</code></pre>
+
+<p>Once work on the feature is complete, you will have a branch with a lot of
+small commits like &#8220;adding a model and a migration&#8221;, &#8220;adding a controller and
+some views&#8221;, &#8220;oh crap - adding tests&#8221; and so on. This is useful while
+developing but larger, incremental commits are more easier to maintain. We will
+use an interactive rebase to squash them together. Also, squashing
+these commits together will allow us to pretend that we wrote the tests
+first&hellip;</p>
+
+<p>We want the rebase to affect only the commits we&#8217;ve made to this branch, not
+the commits that exist on the upstream. To ensure that we only deal with the
+&#8220;local&#8221; commits, use:</p>
+
+<pre><code>git rebase -i origin/master
+</code></pre>
+
+<p>Git will display an editor window with a list of the commits to be modified,
+something like:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+pick 9f5c362 Adding Comment controller, helper, spec
+pick dcd4813 Adding Comment relationship with Post
+pick 977a754 Comment belongs to a User
+pick 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Now we tell git what we to do. Change these lines to:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+squash 9f5c362 Adding Comment controller, helper, spec
+squash dcd4813 Adding Comment relationship with Post
+squash 977a754 Comment belongs to a User
+squash 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Save and close the file. This will squash these commits together into one
+commit and present us with a new editor window where we can give the new commit
+a message. We&#8217;ll use the story id and title for the subject and list the
+original commit messages in the body:</p>
+
+<pre><code>[#3275] User Can Add A Comment To a Post
+
+* Adding Comment model, migrations, spec
+* Adding Comment controller, helper, spec
+* Adding Comment relationship with Post
+* Comment belongs to a User
+* Comment form on Post show page
+</code></pre>
+
+<p>This also follows Tim Pope&#8217;s <a href="http://www.tpope.net/node/106">git commit message best
+practices</a>. Now, save and close your editor.
+This commit is now ready to be merged back into master. First rebase against
+any recent changes in the upstream. Then merge your changes back into master:</p>
+
+<pre><code>git checkout master
+git merge 3275-add-commenting
+</code></pre>
+
+<p>And finally, push your changes to the upstream:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<h2>Bug Fixes</h2>
+
+<p>Bugfixes will use the same workflow as feature work. Name your bugfix branch
+after the bug id and give it a descriptive name. Prefix the branch name with
+&#8220;bug&#8221; to help you keep track of them, for instance:
+<code>bug-3845-empty-comments-allowed</code>.</p>
+
+<p>Do work in your bugfix branch, committing early and often. Rebase frequently
+against the upstream and again when you are finished. Then, use an interactive
+rebase to squash <em>all</em> the commits together. Use the bug id and title for the
+subject of the new commit. Include &#8220;BUG&#8221; or &#8220;BUGFIX&#8221; to make these commits
+easier to identify. For instance:</p>
+
+<pre><code>[#3278] BUGFIX: Empty Comments Should Not Be Allowed
+</code></pre>
+
+<p><em>NB:</em> With a bugfix, squash the commits down into one and exactly one commit
+that completely represents that bugfix. Half of a bugfix is useless.</p>
+
+<h2>QA Branch Management</h2>
+
+<p>In a truly Agile process, as Josh Susser explained to me, you simply deploy
+directly from your latest &#8220;green&#8221; build. While this may seem impossible, there
+are real world examples of the viability of Continuous Deployment.</p>
+
+<p>For most of the teams we train, this sort of extreme agility is a goal rather
+than a way of life. They are transitioning towards a fully Agile process from a
+more rigorous one and often have a significant investment in Quality Assurance.
+For these teams, I recommend a compromise solution: Use a remote QA branch that
+is fast-forward merged from the latest &#8220;green&#8221; (all CI tests pass) master build
+for QA deployments.</p>
+
+<p>If you don&#8217;t already have a QA branch, create one from the current master
+(assuming it&#8217;s green) and then push it to your git host:</p>
+
+<pre><code>git checkout -b qa
+git push origin qa:refs/heads/qa
+</code></pre>
+
+<p>To update an existing QA branch with the latest changes from master, do this:</p>
+
+<pre><code>git checkout qa
+git merge master
+git push origin qa
+</code></pre>
+
+<p>Ensure that the master branch is green when you merge. Also ensure that this
+merge is always a Fast Forward merge. If it is not, it means that commits have
+been made in the QA branch that are not in the master branch. QA should be
+merged into from master only, never worked on directly.</p>
+
+<h2>Production Tagging</h2>
+
+<p>While an Agile team will be deploying continuously, most teams will require a
+more rigorous vetting process before a build is deployed to production. Tags
+provide a simple way for QA to vet a particular build.</p>
+
+<p>Once QA has signed off on a build as ready for production, a tag should be made
+and deployed. In git, a tag can be created with <code>git tag &lt;name&gt;</code>. It is
+important that tag naming is consistent and it is useful if they sort in a
+meaningful way (latest last, for instance). Two good options are a timestamp or
+product version. Use whichever is more meaningful to your team.</p>
+
+<p>The process of creating a timestamped production tag can be automated with a
+simple script or a git alias like this one:</p>
+
+<pre><code>git config alias.datetag '!git tag `date "+%Y%m%d%H%M"`'
+</code></pre>
+
+<p>With this alias, <code>git datetag</code> will create a new tag from <code>HEAD</code> with the
+current timestamp. You will want to be in the QA branch. If the QA branch has
+moved beyond the last commit vetted by your QA team, be sure to checkout that
+commit first.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Story Driven Development With&nbsp;Rails]]></title>
+    <link href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html"/>
+    <updated>2008-09-12T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails</id>
+    <content type="html"><![CDATA[<p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+we&#8217;re going to take the first story and walk through a behavior driven
+development process to implement it in a simple Rails application.</p>
+
+<p>We will focus on making small, iterative changes and following a strict
+test-first philosophy where we write granular unit tests and implement them
+with just enough code to make them pass.</p>
+
+<!--more-->
+
+
+<p>Let&#8217;s review our first story:</p>
+
+<figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me
+</span><span class='line'>
+</span><span class='line'>Acceptance:
+</span><span class='line'>
+</span><span class='line'>* All projects shown in list
+</span><span class='line'>* List is paginated
+</span><span class='line'>* List is sorted by age
+</span><span class='line'>
+</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At this point, let&#8217;s assume that this story is on top of our current iteration.
+First, we&#8217;ll need to review the story for any missing information and
+communicate with the client to clear up any questions. Keep in mind that a
+story is just a way to capture a conversation about a feature. It is not set in
+stone. After talking to the client, we find that we will need to display a
+project&#8217;s author name and title and that the title will need to link to that
+project&#8217;s page. Let&#8217;s update the story appropriately.</p>
+
+<figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me
+</span><span class='line'>
+</span><span class='line'>Acceptance:
+</span><span class='line'>
+</span><span class='line'>* All projects shown in list
+</span><span class='line'>* Show title for each project
+</span><span class='line'>* Show author name for each project
+</span><span class='line'>* Project title links to the project's page
+</span><span class='line'>* List is paginated
+</span><span class='line'>* List is sorted by project age
+</span><span class='line'>
+</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now that the story is complete, deliverable and acceptable, we can begin work
+on the new feature. A implementation plan should be forming in your head. Now
+is the time to divide the work into testable units. In our case we already have
+a Project model with the requisite fields (let&#8217;s say) so our work will focus on
+the controller and view.</p>
+
+<h2>Test All The F&#8212;ing Time</h2>
+
+<p>Client sign-off on well written acceptance tests means that the specifications
+you write and the feature that is implemented as a result will be more closely
+in line with the client&#8217;s expectations. This minimizes the kind of impedance
+mismatch between expectation and execution that so often plagues a project with
+poor client communication and a disorganized process.</p>
+
+<p>Now it&#8217;s time to take our acceptance tests and use them to drive our iterative,
+test-driven development process. Let&#8217;s take it from the top.</p>
+
+<h3>All Projects Shown in List</h3>
+
+<p>Let&#8217;s start with the controller. A list of projects needs an index action.
+Starting at the top, we will need to load all of the projects. Let&#8217;s write a
+test for this:</p>
+
+<figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">it</span> <span class="s2">&quot;loads all the projects&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">projects</span> <span class="o">=</span> <span class="o">[</span><span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span><span class="o">]</span>
+</span><span class='line'>      <span class="no">Project</span><span class="o">.</span><span class="n">stub!</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">get</span> <span class="s1">&#39;index&#39;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">assigns</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span><span class="o">.</span><span class="n">should</span> <span class="o">==</span> <span class="n">projects</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
+eliminating the database from our test but is potentially more brittle since we
+cannot be sure that this interface point to our Project model will not need to
+change in the future.</p>
+
+<p>On a side note, I tend to view controller tests as integration-level tests
+rather than unit tests. As such, I usually do write tests that touch the
+database since these are often less brittle. If you write tests that touch the
+database, ActiveRecord factories such as <a href="http://giantrobots.thoughtbot.com/2008/6/6/waiting-for-a-factory-girl">Factory Girl</a>
+or <a href="http://b.logi.cx/2007/11/26/object-daddy">object daddy</a> are useful for
+populating the database with valid records in known states.</p>
+
+<p>Now we can write the implementation:</p>
+
+<figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">index</span>
+</span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="no">Project</span><span class="o">.</span><span class="n">all</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then we have to display a list of projects. We&#8217;ll write a view test to cover this:</p>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span>
+</span><span class='line'>    <span class="vi">@project</span> <span class="o">=</span> <span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="o">[</span><span class="vi">@project</span><span class="o">]</span>
+</span><span class='line'>    <span class="n">assigns</span><span class="o">[</span><span class="ss">:projects</span><span class="o">]</span> <span class="o">=</span> <span class="vi">@projects</span>
+</span><span class='line'>    <span class="n">render</span> <span class="s1">&#39;projects/index&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should include a list of projects&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&gt;</span> <span class="vi">@projects</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And the implementation:</p>
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
+testing only for semantically appropriate tags, classes and ids whenever
+possible. Using semantically rich markup in your views will make it much easier
+to write robust view tests &#8211; and is also a great practice for its own sake.
+{:.note}</p>
+
+<h3>Show Title for Each Project</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .title&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Show Author Name for Each Project</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .author_name&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">author_name</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
+There&#8217;s a good chance that this name will be taken from an associated User or
+Author model in any non-trivial Rails application. From an object oriented
+standpoint, however, having the author name hang directly from the Project
+model improves encapsulation.</p>
+
+<p>The benefits of this were already seen in the test, where we were able to stub
+<code>author_name</code> directly on the Project mock. Without the accessor, we would be
+forced to stub <code>#author</code> on the Project mock to return an Author mock that then
+stubs <code>#name</code> just so that we could properly test the method chain
+<code>project.author.name</code> that is used in the view. Violating the <a href="http://en.wikipedia.org/wiki/Law_of_Demeter">Law of Demeter</a>
+makes testing harder.</p>
+
+<h3>Project Title Links to the Project&#8217;s Page</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span> <span class="s1">&#39;li.project .title a[href=?]&#39;</span><span class="p">,</span> <span class="n">project_path</span><span class="p">(</span><span class="vi">@project</span><span class="p">),</span>
+</span><span class='line'>      <span class="ss">:text</span> <span class="o">=&gt;</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= link_to project.title, project <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The story is now about half complete. I&#8217;ll leave pagination and default sort
+order as an exercise for the user. In fact, these could also have been broken
+out into a secondary story or stories given that what we have done so far is an
+incremental unit of work.</p>
+
+<p>I hope this rather contrived example shows how stories with well written
+acceptance tests inform a test- or behavior- driven development process and
+help bridge the gap between what the client expects and what the developement
+team delivers.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hack && Ship]]></title>
+    <link href="http://reinh.github.com/blog/2008/08/27/hack-and-and-ship.html"/>
+    <updated>2008-08-27T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/08/27/hack-and-and-ship</id>
+    <content type="html"><![CDATA[<p>When the <a href="http://ogtastic.com/">OG Consulting</a> <a href="http://b.logi.cx/">guys</a> were
+down at <a href="http://hashrocket.com/">Hashrocket</a> working on our latest 3-2-1, they
+introduced us to a pair of bash scripts called <em>hack</em> and <em>ship</em> that they use
+to streamline their everyday git workflow. They&#8217;re so useful that we adopted
+them immediately and we&#8217;ve been using them religiously ever since. I estimate
+that these little scripts save me about an hour a day and, what&#8217;s more, they
+make it easy to follow the <em>commit early, commit often</em> mindset that&#8217;s so
+useful to the agile process.</p>
+
+<!--more-->
+
+
+<h2>Simple Software Process</h2>
+
+<p>Here&#8217;s our typical workflow (before hack and ship):</p>
+
+<ol>
+<li>Start a feature in &#8220;Pivotal Tracker&#8221;:https://www.pivotaltracker.com</li>
+<li>Checkout a working branch for this feature</li>
+<li>Write a test</li>
+<li>Write an implementation to make the test pass</li>
+<li>Repeat 3 and 4 until the feature is complete</li>
+<li>Commit changes to git with a &#8220;useful commit message&#8221;:http://www.tpope.net/node/106</li>
+<li>Checkout the master branch</li>
+<li>Update the master branch</li>
+<li>Checkout the working branch</li>
+<li>Rebase the master branch into the working branch</li>
+<li>Checkout the master branch</li>
+<li>Merge the working branch into the master branch</li>
+<li>Push the changes to the origin repository (usually on &#8220;github&#8221;:https://github.com/)</li>
+<li>Repeat.</li>
+</ol>
+
+
+<p>This is pretty simple (if a bit longwinded). We each probably do this dozens of times a day. Could it be simpler? You bet!</p>
+
+<h2>Simplified Software Process</h2>
+
+<p>I&#8217;d like to introduce you to the Simplified Software Process. While it may not
+be a very good process, it does have one thing going for it: it&#8217;s <em>simple</em>. We
+like simple. So when we saw Rick Bradley&#8217;s super simple bash scripts for
+automating these common git tasks, we jumped on them. These scripts are
+designed to work with the basic git workflow we outlined above. And they have
+awesome names.</p>
+
+<p>Here&#8217;s <a href="gist.github.com/7641"><em>hack</em></a>.</p>
+
+<div><script src='https://gist.github.com/7641.js'></script>
+<noscript><pre><code>#!/bin/sh -x
+# git name-rev is fail
+CURRENT=`git branch | grep '\*' | awk '{print $2}'`
+git checkout master
+git pull origin master
+git checkout ${CURRENT}
+git rebase master</code></pre></noscript></div>
+
+
+<p>And <a href="http://gist.github.com/7642"><em>ship</em></a>.</p>
+
+<div><script src='https://gist.github.com/7642.js'></script>
+<noscript><pre><code>#!/bin/sh -x
+# git name-rev is fail
+CURRENT=`git branch | grep '\*' | awk '{print $2}'`
+git checkout master
+git merge ${CURRENT}
+git push origin master
+git checkout ${CURRENT}</code></pre></noscript></div>
+
+
+<p>Now our process looks like this:</p>
+
+<ol>
+<li>Start a feature in Pivotal Tracker</li>
+<li>Checkout a working branch for this feature</li>
+<li>Write a test</li>
+<li>Write an implementation to make the test pass</li>
+<li>Repeat 3 and 4 until the feature is complete</li>
+<li>Commit changes to git with a useful commit message</li>
+<li><code>hack</code></li>
+<li><code>ship</code></li>
+<li>Repeat.</li>
+</ol>
+
+
+<p>We even wrote ourselves <a href="http://gist.github.com/7640"><em>a little alias</em></a> to make this even easier:</p>
+
+<div><script src='https://gist.github.com/7640.js'></script>
+<noscript><pre><code>alias ssp=&quot;hack &amp;&amp; rake &amp;&amp; ship&quot;</code></pre></noscript></div>
+
+
+<p>Which brings the workflow down to three easy steps:</p>
+
+<ol>
+<li>Test</li>
+<li>Implement</li>
+<li><code>ssp</code></li>
+</ol>
+
+
+<p>Combine this with a Continuous Integration build like
+<a href="http://cruisecontrolrb.thoughtworks.com/">cruisecontrol.rb</a> and a deployment
+to a staging server that takes less than a minute - we love
+<a href="http://engineyard.com/">EngineYard</a> - and you have the perfect recipe for
+agile, iterative, test-driven, micro-release oriented development. I&#8217;ve never
+been happier with my development process.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Rocking the Hoedown]]></title>
+    <link href="http://reinh.github.com/blog/2008/08/10/rocking-the-hoedown.html"/>
+    <updated>2008-08-10T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/08/10/rocking-the-hoedown</id>
+    <content type="html"><![CDATA[<p>We had a great time at the Ruby Hoedown this weekend. The
+<a href="http://hashrocket.com">Hashrocket</a> crew was out in force (and there was much
+debauchery in the Hashrocket RV). We got to meet or get better acquainted with
+a lot of great rubyists and hear a lot of entertaining, informative talks.</p>
+
+<!--more-->
+
+
+<h2>Jim and Joe&#8217;s Mock Dialog</h2>
+
+<p><a href="http://onestepback.org/">Jim Weirich</a> and <a href="http://objo.com/">Joe O&#8217;Brien</a>
+presented their talk about mocks and stubs in the form of a short play in three
+acts. This was very timely for me since mocking properly in tests is area we
+have been discussing quite a bit at Hashrocket.</p>
+
+<p>One thing they said that struck a chord was that complex mocks are a code smell
+that can clue you in to problems or hot spots for refactoring in the code under
+test.</p>
+
+<p>The presentation style was fresh and the tips they provided should be very
+valuable to anyone using mocks in testing (which should be everyone).</p>
+
+<h2>Ruby Best Practice Patterns</h2>
+
+<p>I&#8217;m afraid I played a little trick on poor Jeremy and my dear audience. Instead
+of spending an hour giving examples of patterns and practices, I thought it
+might be fun to take a more satirical slant on the material. The resulting
+talk, <em>Unfactoring From Patterns: Job Security Through Code Obscurity</em>,
+turned out to be a modest success (if I do say so myself) and I think rather
+more entertaining to boot.</p>
+
+<p>I did have time to show a few actual patterns but the dialog during the
+question and answer period was especially valuable. David Black, Yehuda Katz
+and others made some great points and I really enjoyed getting a chance to
+discuss one of my favorite topics with such a receptive and informed audience.</p>
+
+<h2>We Ain&#8217;t Got No Keynote</h2>
+
+<p>Chris decided to forgo the slides to tell us a more personal story about his
+growth from a lowly PHP hacker to the successful rubyist, entreprenuer and
+open-source champion that he is today. Chris is an exemplar for me of the right
+way to go about creating a personal and company brand.</p>
+
+<p>Chris&#8217;s years of passion for tinkering, experimenting and exploring really have
+payed off in a big way. I think his story could rightly be considered
+inspirational. I&#8217;m sure a lot of people left his talk and started side projects
+this very weekend. I really enjoyed his talk (even if he did tell people not to
+buy my book).</p>
+
+<h2>Flog Your Tests, Test Your Flog</h2>
+
+<p>Testing is such a crucial part of my process that I was very excited to hear
+Rick Bradley&#8217;s account of his rather epic battle to add tests to flog. The
+irony here, of course, is that flog itself is a testing tool.</p>
+
+<p>This talk combined two of my favorite topics: testing and refactoring. Rick&#8217;s
+war stories had some great takeaways: the importance of integration tests to
+characterize the behavior of the existing system, the ways in which code that
+is written test first differs from code that is written without tests, the
+utter importance of testing all the f&#8211;king time. Bryal Liles will have more to
+say on that last topic in a bit.</p>
+
+<p>I really can&#8217;t say enough about Rick&#8217;s talk. Hashrocket often takes on
+applications with little or no testing for our Rescue Missions and Rick&#8217;s
+deliberate, careful, comprehensive methodology is exactly the process we try to
+follow when we refactor and resuscitate our clients&#8217; code back to health. Rick
+could very well write the Hashrocket Rescue Mission manual.</p>
+
+<h2>MIDI Machinations and Hungry Hungry Hippos</h2>
+
+<p>Giles Bowkett is a mad genius. Perhaps more importantly, he&#8217;s an artist who can
+ship. He lured us all to a talk about archaeopteryx, his amazing MIDI
+generator, and then proceeded to smack us all with the enlightenment stick.</p>
+
+<p>I won&#8217;t spoil his talk for people who haven&#8217;t seen it. Suffice it to say that
+it was far more than I expected. Giles&#8217;s opinions on software development are
+unique and somewhat iconoclastic. Be careful, the code he writes might blow
+some people&#8217;s minds. Giles&#8217;s <a href="http://gilesbowkett.blogspot.com/2008/04/my-approach-to-giving-presentations.html">presentation style</a>
+is engaging and he can be down right hilarious at times. Also, hippos are
+scary!</p>
+
+<h2>Wrap It Up!</h2>
+
+<p>Taking a road trip down to the Hoedown with the Hashrocket crew was one of the
+best conference experiences I&#8217;ve had so far. The talks were great, but I think
+the after-conference festivities were the real hilight. Watching Obie and Jason
+play beer pong on a table constructed of pool noodles (watch the video),
+playing werewolf with a crew of drunken rubyists and spending time with some of
+my favorite conference friends. Who could ask for more? Also, Jeremy has big
+plans for next year&#8217;s Hoedown. They involve words like &#8220;free&#8221; and &#8220;Nashville&#8221;.
+I would be inclined to add &#8220;awesome&#8221; as well.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Adding Epicycles: Copernicus On Software&nbsp;Development]]></title>
+    <link href="http://reinh.github.com/blog/2008/07/20/adding-epicycles-copernicus-on-software-development.html"/>
+    <updated>2008-07-20T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/07/20/adding-epicycles-copernicus-on-software-development</id>
+    <content type="html"><![CDATA[<p>Most software projects suffer from increasing complexity over their lifetime.
+One of the most common ways that a project grows in complexity is known as
+&#8220;Adding Epicycles&#8221;.</p>
+
+<!--more-->
+
+
+<p>The geocentric model of the solar system is a very old one. First postulated by
+Plato and Aristotle in the 6th century BC, the idea that the Earth is at the
+center of the universe was later refined and standardized in Claudius Ptolemy&#8217;s
+main astronomical book, Almagest. It is also an excellent example of a very
+common design failure in software development.</p>
+
+<h2>Ptolemy&#8217;s Faulty Assumption</h2>
+
+<p>It seems like a pretty obvious idea: sun, stars, planets&hellip; everything
+<em>looks</em> as if it goes around the Earth. Indeed, it was almost two thousand
+years before Copernicus was able to provide a convincing alternative.</p>
+
+<h2>Ptolemy&#8217;s Great Design Failure</h2>
+
+<p>As people began to make better and better observations of the motions of the
+various heavenly bodies, they began to notice that their movements were often
+far more complex than the Ptolemaic system could allow. The planets were
+particularly troublesome in this regard.</p>
+
+<p>The logical step when a hypothesis no longer fits with observation is to
+reconsider that hypothesis and possibly discard it in place of a more fitting
+candidate. This is precisely what did not happen when Ptolemy set out to
+catalog the arrangements and movements of the celestial spheres.</p>
+
+<p>What he did instead was add smaller circles that the planets move in, and then
+have these circles move on top of their orbital circles. These circles on top
+of circles - or <em>epicycles</em> - form the basis of Ptolemy&#8217;s new and &#8220;improved&#8221;
+geocentric model.</p>
+
+<p>Ptolemy&#8217;s greatest mistake was not made in adopting the geocentric model in the
+first place. It was made in not abandoning it when it no longer fit observed
+fact. Rather than throw out his bad design, he added more and more layers of
+bad design to try to fit the new observations.</p>
+
+<h2>Copernicus&#8217;s Great Refactor</h2>
+
+<p>This process of adding more and more complexity onto complexity continued
+through iteration after iteration for almost two thousand years until
+Copernicus stepped in. He fixed the bad design at the root of the ridiculously
+complex and unwieldy Ptolemaic system by putting the Sun at the center. This
+simple change had a profoundly simplifying effect on our understanding of the
+motion of the planets and other heavenly bodies.</p>
+
+<p>Copernicus&#8217;s heliocentric model is in retrospect a rather simple and obvious
+paradigm shift. Nevertheless, it marked the start of the Scientific Revolution
+and is often regarded as the starting point of modern astronomy.</p>
+
+<h2>Copernicus on Software Development</h2>
+
+<p>What does all of this mean for software developers? It means that if your
+system is built on a bad design, trying to accomodate that problem will only
+lead you to add more and more levels of bad design. Eventually the whole system
+will come crashing down under the weight of this accumulated technical debt.</p>
+
+<p>This process of iteratively adding layers of complexity and bad design to
+attempt to shore up a faulty assumption or hopelessly flawed abstraction is
+called <a href="http://c2.com/cgi/wiki?AddingEpicycles">Adding Epicycles</a> in honor of
+Ptolemy and his great design failure. The right thing to do is to follow
+Copernicus&#8217;s lead and correct the faulty assumption or poor abstraction that is
+at the heart of your design failure. The sooner you do this, the sooner you can
+start simplifying your code.</p>
+
+<p>Correcting a critical design flaw will often cause these layers of circle upon
+circle upon preposterous circle of complexty to vanish, leaving your code clean
+and clear and simple. Just try not to anger the Pope.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Ruby Patterns: Query Method]]></title>
+    <link href="http://reinh.github.com/blog/2008/07/17/ruby-patterns-query-method.html"/>
+    <updated>2008-07-17T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/07/17/ruby-patterns-query-method</id>
+    <content type="html"><![CDATA[<p>Today, we will learn how the Query Method pattern handles a set of tensions we often
+face while designed object oriented systems.</p>
+
+<!--more-->
+
+
+<p>What are patterns? Patterns are learnable and reusable answers to common
+programming questions. They are decisions made in response to a number of
+different concerns (or tensions). A well written pattern resolves each of the
+tensions harmoniously and provides a set of repeatable steps for its
+reapplication.</p>
+
+<p>Let&#8217;s look at a situation where various tensions pull us towards the need to
+make a harmonious design decision and attempt to derive a pattern for future
+use. As we do so, we will try to keep in mind the tensions at play and come up
+with steps that can be used to reapply the pattern in the future.</p>
+
+<p>The Query Method pattern answers a particularly common question, &#8220;How can I ask
+an object for information about itself?&#8221; The tensions at play include a desire
+to maintain proper encapsulation, a desire to keep code DRY(Don&#8217;t Repeat
+Yourself) and a desire to maintain or improve the readability of the resulting
+solution.</p>
+
+<p>If you don&#8217;t really care about the discovery process and you want to skip
+straight to the pattern itself, it&#8217;s <a href="#bottom">at the bottom</a>.</p>
+
+<h2>Discovering A Pattern</h2>
+
+<p>In a recent blog post on
+<a href="http://www.stephenchu.com/2008/06/learning-encapsulation-should-come.html">the value of learning encapsulation before learning rails</a>,
+Stephen Chu gives an excellent example of a fragment of ruby code that could be
+improved by application of the Query Method pattern. I&#8217;ll use a slightly
+different example:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="vi">@post</span><span class="o">.</span><span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Let&#8217;s look at this code in light of some of the different tensions:</p>
+
+<h3>Encapsulation</h3>
+
+<p>In his post, Stephen points out that this code breaks encapsulation by yanking
+state information out of the object for comparison. The comparison is being
+made on post information but it is being made outside the context of the post.
+We can change the code a bit to make this more clear:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Blog</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">recent_post_list</span>
+</span><span class='line'>    <span class="vi">@posts</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">post</span><span class="o">|</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The blog that is creating this recent post list shouldn&#8217;t and needn&#8217;t know how
+to determine if a post is recent. This is the post&#8217;s responsibility. The blog
+should simply ask the post if it is recent and let the post make the
+calculation. This desire for encapsulation is the first tension.</p>
+
+<h3>Don&#8217;t Repeat Yourself</h3>
+
+<p>This code seems simple enough. It does one thing and appears to do it
+efficiently. There is no violation of DRY yet, but it isn&#8217;t to difficult to
+imagine other situations where we might need to know if a post is recent.</p>
+
+<p>Let&#8217;s say we are generating an HTML page and we want to apply a special class
+to recent posts. We will need to duplicate this logic inside that method as
+well. What if we later decide that we want posts in the last three days instead
+of two? Now we have to find each instance of this code fragment so that we can
+change it appropriately.</p>
+
+<p>What a pain! Clearly this code is not DRY and its maintainability is
+compromised as a result. This is the second tension.</p>
+
+<h3>Readability</h3>
+
+<p>This code looks pretty readable. <code>published_at</code> and <code>2.days.ago</code> reveal their
+intention quite clearly. If any improvement is to be made, you may think, it
+will be incremental and relatively small. Nevertheless, improved readability
+means improved maintainability, so it is always worth consideration. This is
+the third tension.</p>
+
+<h2>Composing A Pattern</h2>
+
+<p>This list of tensions isn&#8217;t exhaustive but it should be sufficient for us to
+begin considering a solution. How can we improve this code in a way that most
+effectively addresses all of them?</p>
+
+<p>This is a case where the tensions are not in direct opposition. It should be
+pretty easy to come up with a solution. Let&#8217;s try to formulate such a pattern,
+including the steps necessary to reapply it again in the future.</p>
+
+<h3>Encapsulation and DRY</h3>
+
+<p>First, we&#8217;ll start by encapsulating the comparison inside the post object:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">is_published_at_less_than_two_days_ago?</span>
+</span><span class='line'>    <span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="vi">@post</span><span class="o">.</span><span class="n">is_published_at_less_than_two_days_ago?</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This resolves the encapsulation tension. By factoring the behavior to a single
+location it also resolves the DRY tension. It doesn&#8217;t do much for our
+readability tension, though. Let&#8217;s see what we can do about that.</p>
+
+<h3>Readability</h3>
+
+<p>Patterns can often be improved by the inclusion of smaller, more granular
+patterns. In this case, the readability can be improved by providing the method
+with an Intention Revealing Selector. An intention revealing selector is, as
+the name suggests, one that informs to the user of the intention of the method
+rather than its implementation.</p>
+
+<p>Our current selector - and the code it is based on - informs the user of the
+method&#8217;s implementation. It answers the &#8220;how&#8221; question. An Intention Revealing
+Selector answers the more useful &#8220;why&#8221; question, as in: why does this method
+exist, why would I want to use it?</p>
+
+<p>So: why does this method exist? It exists so that the post can be asked if it
+is recent or not. An intention revealing name for this selector would use the
+word &#8220;recent&#8221; to answer the &#8220;why&#8221; question.</p>
+
+<p>The Ruby idiom for a method that is intended to return a boolean value is to
+end it with a &#8220;?&#8221;. Let&#8217;s apply the Intention Revealing Selector pattern by
+giving the method an intention revealing name and ending it with a
+&#8221;?&#8221;.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">recent?</span>
+</span><span class='line'>    <span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">recent?</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I think you&#8217;ll agree that this new method resolves all of the tensions
+harmoniously. The behavior is properly encapsulated, it is DRY because it is
+defined Once And Only Once, and it is significantly more readable than the
+original because it reveals its intention rather than its implementation.</p>
+
+<p>Thus, we can formulate the Query Method Pattern as such:</p>
+
+<h2>Formulating The Query Method Pattern</h2>
+
+<p>When you want to query an object about itself in a way that is properly
+encapsulated, DRY and more readable, follow these steps:</p>
+
+<ol>
+<li>Write a method that performs the query.</li>
+<li>Put it inside the object that holds the information being queried.</li>
+<li>Give it an Intention Revealing Selector.</li>
+</ol>
+
+
+<p>The next time you&#8217;re faced with this design question, you can apply the Query
+Method pattern.</p>
+
+<p>Hopefully this process will help you begin to identify patterns of your own. If
+you&#8217;re interested in learning more about patterns (and you should be), I highly
+recommend
+<a href="http://www.amazon.com/Smalltalk-Best-Practice-Patterns-Kent/dp/013476904X">Smalltalk Best Practice Patterns</a>
+by Kent Beck (non-affiliate link). It&#8217;s worth learning Smalltalk just to be
+able to understand the code examples.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[A Thinking Man's Sphinx]]></title>
+    <link href="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html"/>
+    <updated>2008-07-14T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx</id>
+    <content type="html"><![CDATA[<p>Today, we&#8217;ll explore the differences between UltraSphinx and ThinkingSphinx and
+why we chose to switch to ThinkingSphinx.</p>
+
+<!--more-->
+
+
+<p>We&#8217;ve recently switched a number of projects to
+<a href="http://ts.freelancing-gods.com/">ThinkingSphinx</a> here at
+<a href="http://www.hashrocket.com">Hashrocket</a>. These projects were originally using
+SOLR or <a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">UltraSphinx</a>.
+UltraSphinx is written by <a href="http://blog.evanweaver.com/">Evan Weaver</a>.
+ThinkingSphinx is written by <a href="http://freelancing-gods.com/">Pat Allan</a>. They
+have some similarities: both use Sphinx (obviously); both are based on the
+underlying Ruby API for Sphinx, <a href="http://riddle.freelancing-gods.com/">Riddle</a>
+(also by Pat Allan); both have excellent documentation and well-written
+tutorials. The similarities pretty much end there, however, and the differences
+are far more interesting.</p>
+
+<h2>Basic Sphinx Configuration</h2>
+
+<p>Both plugins help you generate a sphinx.conf file for your each of your rails
+environments, but they do it in drastically different ways. ThinkingSphinx lets
+you use a configuration format you are already used to at the expense of
+reduced configuration options. UltraSphinx is more flexible but less Rubyish.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>UltraSphinx generates the sphinx.conf file from a base configuration file. This
+base file uses the sphinx configuration syntax, passing it through ERB for some
+DRYness. A base file can be specified per-environment. It puts all of its
+configuration information in <code>RAILS_ROOT/config/ultrasphinx/</code>. This provides
+fine-grained - if rather tediously verbose - control over the multitude of
+Sphinx configuration options.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>ThinkingSphinx uses a YAML configuration file that it locates at
+<code>RAILS_ROOT/config/sphinx.yml</code>. It accepts a YAML hash of configuration
+settings. These settings allow you to specify most of the basic Sphinx
+configuration options with ease but you may be out of luck if the option you
+need isn&#8217;t available.</p>
+
+<h2>Basic Index Configuration</h2>
+
+<p>Let&#8217;s start with a basic example of a sphinx index declaration. Keep in mind
+that your indexes will likely be significantly more complex in the real world.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>UltraSphinx uses a declarative <code>is_indexed</code> statement in the model that feels
+vaguely similar in style to an association or named scope declaration. This is
+the usage example given in the
+<a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">README</a>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:fields</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="o">]</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This seems simple enough for such a simple case. We&#8217;ll see how it looks for
+less trivial cases.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>ThinkingSphinx, on the other hand, uses a <code>define_index</code> block in the model to
+allow the individual index configuration options to be stated declaratively.
+The canonical example from UltraSphinx would look like this in ThinkingSphinx:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">body</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first thing you may notice is that the same index configuration is three
+lines in ThinkingSphinx instead of one in UltraSphinx. If you look closely,
+you&#8217;ll also see that the field names are not symbols as you might expect but
+method calls. We&#8217;ll get into why this is in a moment.</p>
+
+<h2>Real World Index Configuration</h2>
+
+<p>Your real world applications are likely to require a significantly more complex
+index declaration to meet the search needs of your users. Let&#8217;s look at an
+example of such a real world Sphinx index declaration.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>Here&#8217;s an example of a more realistic UltraSphinx index configuration. This is
+the type of configuration you&#8217;re likely to use on any non-trivial project.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:conditions</span> <span class="o">=&gt;</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span><span class="p">,</span>
+</span><span class='line'>             <span class="ss">:fields</span>     <span class="o">=&gt;</span> <span class="o">[</span><span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;body&#39;</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;cached_tag_list&#39;</span><span class="p">}</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'>             <span class="ss">:include</span>    <span class="o">=&gt;</span> <span class="o">[</span><span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;blog_description&quot;</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">}</span><span class="o">]</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is about as pretty as it&#8217;s going to get - and that&#8217;s not very pretty.
+Large, deeply nested hashes of arrays of hashes are not easily scannable and
+will become exponentially difficult to maintain as their size and complexity
+increases.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>Let&#8217;s look at that same example translated to ThinkingSphinx.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">title</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">body</span><span class="p">,</span> <span class="n">cached_tag_list</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">blog</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:blog_description</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">blog</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>       <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:blog</span><span class="p">,</span>     <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">category</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>   <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:category</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">where</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Not only did the number of lines decrease, the readability is far greater. I
+know which one I&#8217;d rather write. More importantly, I know which one I&#8217;d rather
+have to maintain weeks or months downline when it needs to be modified.</p>
+
+<p>Notice that the declarations use methods rather than symbols. ThinkingSphinx
+uses some interesting metaprogramming to allow this. Notice also that indexed
+fields on associations are specified in the same way you would access that
+field. Simple.</p>
+
+<h2>Sphinx Rake Tasks</h2>
+
+<p>Both UltraSphinx and ThinkingSphinx provide a number of rake tasks for common
+sphinx tasks such as generating the configuration file; generating the index;
+and starting, stopping, and restarting the searchd daemon. Both provide
+abbreviations for the more common task, such as <code>ts:in</code> for
+<code>thinking_sphinx:index</code> or <code>us:conf</code> for <code>ultrasphinx:configure</code>.</p>
+
+<h2>Deployment and Configuration Management</h2>
+
+<p>Both UltraSphinx and ThinkingSphinx are pretty simple to deploy. You should
+symlink your configuration file from a shared location into your app&#8217;s path
+after deployment, just as you probably do for your <code>database.yml</code> file. You
+will probably want to run the configuration task after you update the code.
+Here, for instance, is a Capistrano task to run your ThinkingSphinx
+configuration task:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;Generate the ThinkingSphinx configuration file&quot;</span>
+</span><span class='line'>  <span class="n">task</span> <span class="ss">:configure</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">run</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> &amp;&amp; rake thinking_sphinx:configure&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You&#8217;ll want to have this task run after each deployment:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can create other tasks relatively easily for reindexing and managing the
+searchd daemon. I found a good guide to
+<a href="http://www.updrift.com/article/deploying-a-rails-app-with-thinking-sphinx">deploying a rails app with ThinkingSphinx</a>
+linked from Pat Allan&#8217;s blog. I found a useful set of
+<a href="http://github.com/ruberion/ruberion_server_tools/tree/master/recipes/tasks/ultrasphinx.rb">UltraSphinx capistrano tasks</a>
+in Ruberion&#8217;s server tools plugin on Github. If you chose to host with
+<a href="http://www.engineyard.com/">EngineYard</a>, they can manage either configuration
+for you with their pre-baked builds and deploy tasks.</p>
+
+<h2>Real World Experience</h2>
+
+<p>We ran into a number of issues when setting up UltraSphinx:</p>
+
+<ul>
+<li><p>UltraSphinx loads your models without loading the full rails environment. This means that if
+your models depend on any of your lib files or any gems frozen in vendor/gems, you will have to
+require all of these files explicitly in each model. This is a pain.</p></li>
+<li><p>The fundamentally sound design and code of UltraSphinx are somewhat undermined by poorly
+implemented exception handling. This means that while most of the time things work swimmingly,
+when they fail you&#8217;re really sunk! The errors that you receive are often useless in diagnosing
+the actual problem.</p></li>
+<li><p>We had bugs in our index that only existed on our staging and production slices. These caused
+page counts to be incorrect and nil records to be returned in certain cases. In certain cases it
+also caused 5xx errors.</p></li>
+</ul>
+
+
+<h3>Moving To ThinkingSphinx</h3>
+
+<p>After another Hashrocket team had success moving their project from SOLR to
+ThinkingSphinx, I decided to move our project as well. Moving to ThinkingSphinx
+proved to be a relatively painless experience. The process was essentially
+five-fold:</p>
+
+<ul>
+<li>Uninstall UltraSphinx and install ThinkingSphinx.</li>
+<li>Translate your <code>is_indexed</code> declaration into a @define_index@ block and change your search actions to use the ThinkingSphinx API.</li>
+<li>Rewrite your deployment tasks to run the ThinkingSphinx rake tasks.</li>
+<li>Stop searchd and then run your new configure, index and startd start tasks.</li>
+<li>PROFIT!</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Git Push: Just The Tip]]></title>
+    <link href="http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip.html"/>
+    <updated>2008-04-18T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip</id>
+    <content type="html"><![CDATA[<p>Today we delve into the world of <code>git push</code>, one of the most often used git
+tools. <code>git push</code> is typically used to update a remote ref and associated
+objects based on a local ref &#8211; in other words, to push your local changes to an
+upstream repository &#8211; but you can also use it to create or delete remote
+branches and <del>much, much more!</del> actually, that&#8217;s about it.</p>
+
+<!--more-->
+
+
+<h2>Just The Tip</h2>
+
+<p>The most common use of <code>git push</code> is to push your local changes to your public
+upstream repository. Assuming that the upstream is a remote named &#8220;origin&#8221; (the
+default remote name if your repository is a clone) and the branch to be updated
+to/from is named &#8220;master&#8221; (the default branch name), this is done with:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<p>Get used to this. You&#8217;ll be doing it a lot.</p>
+
+<h2>A Bit Deeper</h2>
+
+<p>Git uses the term &#8220;refspec&#8221; when describing the usage of some of its commands.
+A refspec is essentially a name that git can resolve to a commit object. This
+can be the name of a branch or an arbitrary &#8220;SHA1 expression&#8221; such as
+<code>master~4</code>, among
+<a href="http://www.kernel.org/pub/software/scm/git/docs/git-rev-parse.html">others</a>.
+Git gives you a lot of ways to refer to a commit but for most purposes you&#8217;ll
+just use the name of a branch with <code>git push</code>.</p>
+
+<p>The <a href="http://www.kernel.org/pub/software/scm/git/docs/git-pull.html">kernel.org manpage for git pull</a>
+will rather cryptically tell you that &#8220;The canonical format of a
+&lt;refspec&gt; parameter is <code>+?&lt;src&gt;:&lt;dst&gt;</code>&#8221;. Most of the time this translates
+to <code>&lt;branch to push from&gt;:&lt;branch to push to&gt;</code>. The branch to push from and the
+colon are optional. If left out, git will push from the local branch to the
+remote branch of the same name. If no refspec is used at all, git will push all
+&#8220;heads&#8221; (f.e. branches) on the local to matching heads that exist on the
+remote.</p>
+
+<p>In practice, this means that:</p>
+
+<ul>
+<li><code>git push origin</code> will push changes from all local branches to matching branches the origin remote.</li>
+<li><code>git push origin master</code> will push changes from the local master branch to the remote master branch.</li>
+<li><code>git push origin master:staging</code> will push changes from the local master branch to the remote staging branch <em>if it exists</em>.</li>
+</ul>
+
+
+<h2>Tips and Tricks</h2>
+
+<h3>Create a Remote Branch</h3>
+
+<p><code>git push origin master:refs/heads/staging</code> will create the branch <code>staging</code> in
+the origin by copying the local @master@ branch</p>
+
+<h3>Delete a Remote Branch</h3>
+
+<p><code>git push origin :staging</code> will delete the branch <code>staging</code> from the origin repository.</p>
+
+<h3>Set Up A Branch&#8217;s Default Remote</h3>
+
+<p>You can use git config to assign a default remote to a given branch. This
+default remote will be used to push that branch unless otherwise specified.</p>
+
+<p>This is already done for you when you use <code>git clone</code>, allowing you to use <code>git
+push</code> without any arguments to push the local master branch to update the
+origin repository&#8217;s master branch.</p>
+
+<p><code>git config branch.&lt;name&gt;.remote &lt;remote&gt;</code> can be used to specify this manually.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Custom Textile Tags For Great Justice]]></title>
+    <link href="http://reinh.github.com/blog/2008/04/09/customize-textile-tags-for-great-justice.html"/>
+    <updated>2008-04-09T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/04/09/customize-textile-tags-for-great-justice</id>
+    <content type="html"><![CDATA[<p>Taking some inspiration (and code) from the quirky but lovable why&#8217;s original
+post on <a href="http://redhanded.hobix.com/inspect/usingRedcloth3.html">adding yer custom blocks</a> to RedCloth and
+the inimitable Geoff Grosenbach&#8217;s foray into the world of
+<a href="http://nubyonrails.com/articles/about-this-blog-custom-textile">custom textile figure tags</a>,
+we&#8217;re going to implement a customer textile tag for our blog&#8217;s thumbnail
+images.</p>
+
+<!--more-->
+
+
+<p>RedCloth&#8217;s textile implementation uses some simple metaprogramming to create
+its own tags, which allows you to (more or less) easily create new tags to suit
+your own needs. The basic formula is: write a <code>textile_#{ tag }</code> method, where
+<code>tag</code> is the name of the tag you want to create. This method takes four
+arguments, tag, atts, cite and content, which are parsed from the textile by
+the RedCloth engine.</p>
+
+<p>For our purposes, we&#8217;re only concerned with content and atts, so I&#8217;ll leave the
+rest as an exercise for the gentle reader. The html we&#8217;re trying to create
+looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;img&quot;</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;figure-1-1&quot;</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;</span><span class="n">a</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;/images/image.jpb&quot;</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;/images/thumbs/image.jpg&quot;</span> <span class="n">alt</span><span class="o">=</span><span class="s2">&quot;Figure 1.1&quot;</span> <span class="sr">/&gt;</span>
+</span><span class='line'><span class="sr">  &lt;/</span><span class="n">a</span><span class="o">&gt;</span>
+</span><span class='line'>  <span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="no">Figure</span> <span class="mi">1</span><span class="o">.</span><span class="mi">1</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The tag we want to use to create it looks like this:</p>
+
+<pre><code>fig. 1.1 | image.jpg
+</code></pre>
+
+<p>That&#8217;s quite a bit shorter and more elegant. Jumping right in to the good
+stuff, the method definition for our new tag looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">textile_fig</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">atts</span><span class="p">,</span> <span class="n">cite</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
+</span><span class='line'>    <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
+</span><span class='line'>  <span class="n">figure_name</span> <span class="o">=</span> <span class="s2">&quot;Figure </span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="n">figure_id</span> <span class="o">=</span> <span class="s2">&quot;figure-</span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">tr</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="o">&lt;&lt;-</span><span class="no">TAG</span>
+</span><span class='line'><span class="sh">  &lt;div class=&quot;#{span_class}&quot; id=&quot;#{figure_id}&quot;&gt;</span>
+</span><span class='line'><span class="sh">    &lt;a class=&quot;fig&quot; href=&quot;/images/#{img_url}&quot;&gt;</span>
+</span><span class='line'><span class="sh">      &lt;img src=&quot;/images/thumbs/#{img_url}&quot; alt=&quot;#{figure_name}&quot; /&gt;</span>
+</span><span class='line'><span class="sh">    &lt;/a&gt;</span>
+</span><span class='line'><span class="sh">    &lt;p&gt;#{figure_name}&lt;/p&gt;</span>
+</span><span class='line'><span class="sh">  &lt;/div&gt;</span>
+</span><span class='line'><span class="no">  TAG</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Let&#8217;s break that down.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
+</span><span class='line'><span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
+</span><span class='line'>  <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This adds any classes in atts (in the form of <code>class="foo"</code>) to the base class,
+img.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
+</span><span class='line'><span class="n">figure_name</span> <span class="o">=</span> <span class="s2">&quot;Figure </span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="n">figure_id</span> <span class="o">=</span> <span class="s2">&quot;figure-</span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">tr</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This breaks <code>fig 1.1 | image.jpg</code> down into two parts by splitting on the <code>|</code>
+and then normalizes them a bit to be used later.</p>
+
+<p>Finally, the relevant parts are jammed into the html prototype and spit back as
+the method&#8217;s return value for insertion into your textile document (and for
+great justice, of course).</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Simple Git Continuous Integration]]></title>
+    <link href="http://reinh.github.com/blog/2008/02/12/git-pre-commit-hook.html"/>
+    <updated>2008-02-12T00:00:00-08:00</updated>
+    <id>http://reinh.github.com/blog/2008/02/12/git-pre-commit-hook</id>
+    <content type="html"><![CDATA[<p>The easiest way to prevent a broken build is to run your tests before you
+commit. This can be done with a simple git hook. Preventing your developers
+(and yourself) from breaking the build is as simple as putting this in your
+.git/hooks/pre-commit and making it executable: <code>chmod +x
+.git/hooks/pre-commit</code>.</p>
+
+<!--more-->
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'>rake spec 2&gt; /dev/null
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will stop the commit if the specs don’t pass.</p>
+
+<p>This isn’t a replacement for a more robust CI system but it does make it a lot
+harder to do something stupid. Redirecting <code>STDERR</code> to <code>/dev/null</code> is optional but
+recommended since the <code>STDERR</code> output of failing specs isn’t useful. It you use
+Test::Unit instead of RSpec (for shame), use rake test instead. Likewise,
+anything that returns proper error codes (0 for success, > 0 for failure) can
+be used.</p>
+
+<p>This is mainly useful if your specs take under a minute to run, otherwise it
+becomes tedious. If you have long-running specs, I suggest using a special task
+that runs an abridged set of core specs instead.</p>
+]]></content>
+  </entry>
+  
+</feed>

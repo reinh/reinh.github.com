@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: git | reinh.com]]></title>
+  <link href="http://reinh.github.com/blog/categories/git/atom.xml" rel="self"/>
+  <link href="http://reinh.github.com/"/>
+  <updated>2013-01-15T15:14:10-08:00</updated>
+  <id>http://reinh.github.com/</id>
+  <author>
+    <name><![CDATA[Rein Henrichs]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[A Git Workflow for Agile Teams]]></title>
+    <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
+    <updated>2009-03-02T00:00:00-08:00</updated>
+    <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
+    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+bugs while keeping a clean and sane history.</p>
+
+<p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
+Agile mentoring and training. Git gives us the flexibility to design a version
+control workflow that meets the needs of either a fully Agile team or a team
+that is transitioning towards an Agile process.</p>
+
+<!--more-->
+
+
+<p>There are many usable git workflows. Indeed, git is really "a tool for
+designing VCS workflows" rather than a Version Control System itself. Or, as
+Linus would say, git is just a stupid content tracker.</p>
+
+<p>This is by no means a normative document or my attempt to define The One True
+Workflow. I have found this workflow to be productive and relatively painless,
+especially for teams that are still learning and transitioning towards a more
+Agile process. I invite you to comment below and describe the git workflow that
+works best for you.</p>
+
+<h2>Credits</h2>
+
+<p>Anyone interested in using git in an Agile environment should read Josh
+Susser's <cite>Agile Git and the Story Branch Pattern</cite>. This workflow
+is based largely on his.</p>
+
+<p>The process of squashing commits into more atomic and incremental units has
+been described by Justin Reagor in <cite>A "Squash" WorkFlow in Git</cite>.
+Justin's post also references a <code>git rebase -i</code> walkthrough by MadCoder
+that provides a good explanation the interactive rebase process.</p>
+
+<p>Thanks also to <a href="http://www.rickbradley.com/">Rick Bradley</a> of <a href="http://www.ogtastic.com/">OG Consulting</a>
+and <a href="http://blog.hasmanythrough.com/">Josh Susser</a> of <a href="http://pivotallabs.com">Pivotal Labs</a>
+for many fruitful and often hilarious discussions about git, Agile and ponies.</p>
+
+<h2>Feature Development</h2>
+
+<p>Our git feature development workflow consists of these steps:</p>
+
+<ol>
+<li>Pull to update your local master</li>
+<li>Check out a feature branch</li>
+<li>Do work in your feature branch, committing early and often</li>
+<li>Rebase frequently to incorporate upstream changes</li>
+<li>Interactive rebase (squash) your commits</li>
+<li>Merge your changes with master</li>
+<li>Push your changes to the upstream</li>
+</ol>
+
+
+<p>First, and while in your master branch (<code>git checkout master</code>), pull in the
+most recent changes:</p>
+
+<pre><code>git pull origin master
+</code></pre>
+
+<p>This should never create a merge commit because we are never working directly
+in master.</p>
+
+<p><em>NB:</em> Whenever you perform a pull, merge or rebase, make sure that you
+run tests directly afterwards. Git may not show any conflicts but that doesn't
+mean that two changes are compatible. Also run tests before you commit (of
+course).</p>
+
+<p>We begin with the topmost available story in <a href="http://pivotaltracker.com">Pivotal Tracker</a>.
+Let's say that it's <em>#3275: User Can Add A
+Comment To a Post</em>. First, check out a feature branch named with the story id
+and a short, descriptive title:</p>
+
+<pre><code>git checkout -b 3275-add-commenting
+</code></pre>
+
+<p>The id allows us to easily track this branch back to the story that spawned it.
+The title is there to give us humans a little hint as to what's in it. Do some
+work on this branch, committing early and often (for instance, whenever your
+tests pass). Rebase against the upstream frequently to prevent your branch from
+diverging significantly:</p>
+
+<pre><code>git fetch origin master
+git rebase origin/master
+</code></pre>
+
+<p><em>NB:</em> This is often done by checking master out and pulling, but this method
+requires extra steps:</p>
+
+<pre><code>git checkout master
+git pull
+git checkout 3275-add-commenting
+git rebase master
+</code></pre>
+
+<p>Once work on the feature is complete, you will have a branch with a lot of
+small commits like "adding a model and a migration", "adding a controller and
+some views", "oh crap - adding tests" and so on. This is useful while
+developing but larger, incremental commits are more easier to maintain. We will
+use an interactive rebase to squash them together. Also, squashing
+these commits together will allow us to pretend that we wrote the tests
+first&hellip;</p>
+
+<p>We want the rebase to affect only the commits we've made to this branch, not
+the commits that exist on the upstream. To ensure that we only deal with the
+"local" commits, use:</p>
+
+<pre><code>git rebase -i origin/master
+</code></pre>
+
+<p>Git will display an editor window with a list of the commits to be modified,
+something like:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+pick 9f5c362 Adding Comment controller, helper, spec
+pick dcd4813 Adding Comment relationship with Post
+pick 977a754 Comment belongs to a User
+pick 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Now we tell git what we to do. Change these lines to:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+squash 9f5c362 Adding Comment controller, helper, spec
+squash dcd4813 Adding Comment relationship with Post
+squash 977a754 Comment belongs to a User
+squash 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Save and close the file. This will squash these commits together into one
+commit and present us with a new editor window where we can give the new commit
+a message. We'll use the story id and title for the subject and list the
+original commit messages in the body:</p>
+
+<pre><code>[#3275] User Can Add A Comment To a Post
+
+* Adding Comment model, migrations, spec
+* Adding Comment controller, helper, spec
+* Adding Comment relationship with Post
+* Comment belongs to a User
+* Comment form on Post show page
+</code></pre>
+
+<p>This also follows Tim Pope's <a href="http://www.tpope.net/node/106">git commit message best
+practices</a>. Now, save and close your editor.
+This commit is now ready to be merged back into master. First rebase against
+any recent changes in the upstream. Then merge your changes back into master:</p>
+
+<pre><code>git checkout master
+git merge 3275-add-commenting
+</code></pre>
+
+<p>And finally, push your changes to the upstream:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<h2>Bug Fixes</h2>
+
+<p>Bugfixes will use the same workflow as feature work. Name your bugfix branch
+after the bug id and give it a descriptive name. Prefix the branch name with
+"bug" to help you keep track of them, for instance:
+<code>bug-3845-empty-comments-allowed</code>.</p>
+
+<p>Do work in your bugfix branch, committing early and often. Rebase frequently
+against the upstream and again when you are finished. Then, use an interactive
+rebase to squash <em>all</em> the commits together. Use the bug id and title for the
+subject of the new commit. Include "BUG" or "BUGFIX" to make these commits
+easier to identify. For instance:</p>
+
+<pre><code>[#3278] BUGFIX: Empty Comments Should Not Be Allowed
+</code></pre>
+
+<p><em>NB:</em> With a bugfix, squash the commits down into one and exactly one commit
+that completely represents that bugfix. Half of a bugfix is useless.</p>
+
+<h2>QA Branch Management</h2>
+
+<p>In a truly Agile process, as Josh Susser explained to me, you simply deploy
+directly from your latest "green" build. While this may seem impossible, there
+are real world examples of the viability of Continuous Deployment.</p>
+
+<p>For most of the teams we train, this sort of extreme agility is a goal rather
+than a way of life. They are transitioning towards a fully Agile process from a
+more rigorous one and often have a significant investment in Quality Assurance.
+For these teams, I recommend a compromise solution: Use a remote QA branch that
+is fast-forward merged from the latest "green" (all CI tests pass) master build
+for QA deployments.</p>
+
+<p>If you don't already have a QA branch, create one from the current master
+(assuming it's green) and then push it to your git host:</p>
+
+<pre><code>git checkout -b qa
+git push origin qa:refs/heads/qa
+</code></pre>
+
+<p>To update an existing QA branch with the latest changes from master, do this:</p>
+
+<pre><code>git checkout qa
+git merge master
+git push origin qa
+</code></pre>
+
+<p>Ensure that the master branch is green when you merge. Also ensure that this
+merge is always a Fast Forward merge. If it is not, it means that commits have
+been made in the QA branch that are not in the master branch. QA should be
+merged into from master only, never worked on directly.</p>
+
+<h2>Production Tagging</h2>
+
+<p>While an Agile team will be deploying continuously, most teams will require a
+more rigorous vetting process before a build is deployed to production. Tags
+provide a simple way for QA to vet a particular build.</p>
+
+<p>Once QA has signed off on a build as ready for production, a tag should be made
+and deployed. In git, a tag can be created with <code>git tag &lt;name&gt;</code>. It is
+important that tag naming is consistent and it is useful if they sort in a
+meaningful way (latest last, for instance). Two good options are a timestamp or
+product version. Use whichever is more meaningful to your team.</p>
+
+<p>The process of creating a timestamped production tag can be automated with a
+simple script or a git alias like this one:</p>
+
+<pre><code>git config alias.datetag '!git tag `date "+%Y%m%d%H%M"`'
+</code></pre>
+
+<p>With this alias, <code>git datetag</code> will create a new tag from <code>HEAD</code> with the
+current timestamp. You will want to be in the QA branch. If the QA branch has
+moved beyond the last commit vetted by your QA team, be sure to checkout that
+commit first.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Git Push: Just The Tip]]></title>
+    <link href="http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip.html"/>
+    <updated>2008-04-18T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip</id>
+    <content type="html"><![CDATA[<p>Today we delve into the world of <code>git push</code>, one of the most often used git
+tools. <code>git push</code> is typically used to update a remote ref and associated
+objects based on a local ref -- in other words, to push your local changes to an
+upstream repository -- but you can also use it to create or delete remote
+branches and <del>much, much more!</del> actually, that's about it.</p>
+
+<!--more-->
+
+
+<h2>Just The Tip</h2>
+
+<p>The most common use of <code>git push</code> is to push your local changes to your public
+upstream repository. Assuming that the upstream is a remote named "origin" (the
+default remote name if your repository is a clone) and the branch to be updated
+to/from is named "master" (the default branch name), this is done with:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<p>Get used to this. You'll be doing it a lot.</p>
+
+<h2>A Bit Deeper</h2>
+
+<p>Git uses the term "refspec" when describing the usage of some of its commands.
+A refspec is essentially a name that git can resolve to a commit object. This
+can be the name of a branch or an arbitrary "SHA1 expression" such as
+<code>master~4</code>, among
+<a href="http://www.kernel.org/pub/software/scm/git/docs/git-rev-parse.html">others</a>.
+Git gives you a lot of ways to refer to a commit but for most purposes you'll
+just use the name of a branch with <code>git push</code>.</p>
+
+<p>The <a href="http://www.kernel.org/pub/software/scm/git/docs/git-pull.html">kernel.org manpage for git pull</a>
+will rather cryptically tell you that "The canonical format of a
+&lt;refspec&gt; parameter is <code>+?&lt;src&gt;:&lt;dst&gt;</code>". Most of the time this translates
+to <code>&lt;branch to push from&gt;:&lt;branch to push to&gt;</code>. The branch to push from and the
+colon are optional. If left out, git will push from the local branch to the
+remote branch of the same name. If no refspec is used at all, git will push all
+"heads" (f.e. branches) on the local to matching heads that exist on the
+remote.</p>
+
+<p>In practice, this means that:</p>
+
+<ul>
+<li><code>git push origin</code> will push changes from all local branches to matching branches the origin remote.</li>
+<li><code>git push origin master</code> will push changes from the local master branch to the remote master branch.</li>
+<li><code>git push origin master:staging</code> will push changes from the local master branch to the remote staging branch <em>if it exists</em>.</li>
+</ul>
+
+
+<h2>Tips and Tricks</h2>
+
+<h3>Create a Remote Branch</h3>
+
+<p><code>git push origin master:refs/heads/staging</code> will create the branch <code>staging</code> in
+the origin by copying the local @master@ branch</p>
+
+<h3>Delete a Remote Branch</h3>
+
+<p><code>git push origin :staging</code> will delete the branch <code>staging</code> from the origin repository.</p>
+
+<h3>Set Up A Branch's Default Remote</h3>
+
+<p>You can use git config to assign a default remote to a given branch. This
+default remote will be used to push that branch unless otherwise specified.</p>
+
+<p>This is already done for you when you use <code>git clone</code>, allowing you to use <code>git
+push</code> without any arguments to push the local master branch to update the
+origin repository's master branch.</p>
+
+<p><code>git config branch.&lt;name&gt;.remote &lt;remote&gt;</code> can be used to specify this manually.</p>
+]]></content>
+  </entry>
+  
+</feed>

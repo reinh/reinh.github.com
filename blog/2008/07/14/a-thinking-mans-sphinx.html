@@ -1,0 +1,507 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>A Thinking Man's Sphinx - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="Today, we&#8217;ll explore the differences between UltraSphinx and ThinkingSphinx and
+why we chose to switch to ThinkingSphinx. We&#8217;ve recently &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">A Thinking Man's Sphinx</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">Jul 14<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Today, we&#8217;ll explore the differences between UltraSphinx and ThinkingSphinx and
+why we chose to switch to ThinkingSphinx.</p>
+
+<!--more-->
+
+
+<p>We&#8217;ve recently switched a number of projects to
+<a href="http://ts.freelancing-gods.com/">ThinkingSphinx</a> here at
+<a href="http://www.hashrocket.com">Hashrocket</a>. These projects were originally using
+SOLR or <a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">UltraSphinx</a>.
+UltraSphinx is written by <a href="http://blog.evanweaver.com/">Evan Weaver</a>.
+ThinkingSphinx is written by <a href="http://freelancing-gods.com/">Pat Allan</a>. They
+have some similarities: both use Sphinx (obviously); both are based on the
+underlying Ruby API for Sphinx, <a href="http://riddle.freelancing-gods.com/">Riddle</a>
+(also by Pat Allan); both have excellent documentation and well-written
+tutorials. The similarities pretty much end there, however, and the differences
+are far more interesting.</p>
+
+<h2>Basic Sphinx Configuration</h2>
+
+<p>Both plugins help you generate a sphinx.conf file for your each of your rails
+environments, but they do it in drastically different ways. ThinkingSphinx lets
+you use a configuration format you are already used to at the expense of
+reduced configuration options. UltraSphinx is more flexible but less Rubyish.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>UltraSphinx generates the sphinx.conf file from a base configuration file. This
+base file uses the sphinx configuration syntax, passing it through ERB for some
+DRYness. A base file can be specified per-environment. It puts all of its
+configuration information in <code>RAILS_ROOT/config/ultrasphinx/</code>. This provides
+fine-grained - if rather tediously verbose - control over the multitude of
+Sphinx configuration options.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>ThinkingSphinx uses a YAML configuration file that it locates at
+<code>RAILS_ROOT/config/sphinx.yml</code>. It accepts a YAML hash of configuration
+settings. These settings allow you to specify most of the basic Sphinx
+configuration options with ease but you may be out of luck if the option you
+need isn&#8217;t available.</p>
+
+<h2>Basic Index Configuration</h2>
+
+<p>Let&#8217;s start with a basic example of a sphinx index declaration. Keep in mind
+that your indexes will likely be significantly more complex in the real world.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>UltraSphinx uses a declarative <code>is_indexed</code> statement in the model that feels
+vaguely similar in style to an association or named scope declaration. This is
+the usage example given in the
+<a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">README</a>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:fields</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="o">]</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This seems simple enough for such a simple case. We&#8217;ll see how it looks for
+less trivial cases.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>ThinkingSphinx, on the other hand, uses a <code>define_index</code> block in the model to
+allow the individual index configuration options to be stated declaratively.
+The canonical example from UltraSphinx would look like this in ThinkingSphinx:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+</span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">body</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first thing you may notice is that the same index configuration is three
+lines in ThinkingSphinx instead of one in UltraSphinx. If you look closely,
+you&#8217;ll also see that the field names are not symbols as you might expect but
+method calls. We&#8217;ll get into why this is in a moment.</p>
+
+<h2>Real World Index Configuration</h2>
+
+<p>Your real world applications are likely to require a significantly more complex
+index declaration to meet the search needs of your users. Let&#8217;s look at an
+example of such a real world Sphinx index declaration.</p>
+
+<h3>UltraSphinx</h3>
+
+<p>Here&#8217;s an example of a more realistic UltraSphinx index configuration. This is
+the type of configuration you&#8217;re likely to use on any non-trivial project.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:conditions</span> <span class="o">=&gt;</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span><span class="p">,</span>
+</span><span class='line'>             <span class="ss">:fields</span>     <span class="o">=&gt;</span> <span class="o">[</span><span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;body&#39;</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:field</span> <span class="o">=&gt;</span> <span class="s1">&#39;cached_tag_list&#39;</span><span class="p">}</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'>             <span class="ss">:include</span>    <span class="o">=&gt;</span> <span class="o">[</span><span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;blog&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;blog_description&quot;</span><span class="p">},</span>
+</span><span class='line'>                             <span class="p">{</span><span class="ss">:association_name</span> <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:field</span>            <span class="o">=&gt;</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+</span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">}</span><span class="o">]</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is about as pretty as it&#8217;s going to get - and that&#8217;s not very pretty.
+Large, deeply nested hashes of arrays of hashes are not easily scannable and
+will become exponentially difficult to maintain as their size and complexity
+increases.</p>
+
+<h3>ThinkingSphinx</h3>
+
+<p>Let&#8217;s look at that same example translated to ThinkingSphinx.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">title</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">body</span><span class="p">,</span> <span class="n">cached_tag_list</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">blog</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:blog_description</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">blog</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>       <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:blog</span><span class="p">,</span>     <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>    <span class="n">indexes</span> <span class="n">category</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>   <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:category</span><span class="p">,</span> <span class="ss">:sortable</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">where</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Not only did the number of lines decrease, the readability is far greater. I
+know which one I&#8217;d rather write. More importantly, I know which one I&#8217;d rather
+have to maintain weeks or months downline when it needs to be modified.</p>
+
+<p>Notice that the declarations use methods rather than symbols. ThinkingSphinx
+uses some interesting metaprogramming to allow this. Notice also that indexed
+fields on associations are specified in the same way you would access that
+field. Simple.</p>
+
+<h2>Sphinx Rake Tasks</h2>
+
+<p>Both UltraSphinx and ThinkingSphinx provide a number of rake tasks for common
+sphinx tasks such as generating the configuration file; generating the index;
+and starting, stopping, and restarting the searchd daemon. Both provide
+abbreviations for the more common task, such as <code>ts:in</code> for
+<code>thinking_sphinx:index</code> or <code>us:conf</code> for <code>ultrasphinx:configure</code>.</p>
+
+<h2>Deployment and Configuration Management</h2>
+
+<p>Both UltraSphinx and ThinkingSphinx are pretty simple to deploy. You should
+symlink your configuration file from a shared location into your app&#8217;s path
+after deployment, just as you probably do for your <code>database.yml</code> file. You
+will probably want to run the configuration task after you update the code.
+Here, for instance, is a Capistrano task to run your ThinkingSphinx
+configuration task:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;Generate the ThinkingSphinx configuration file&quot;</span>
+</span><span class='line'>  <span class="n">task</span> <span class="ss">:configure</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">run</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> &amp;&amp; rake thinking_sphinx:configure&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You&#8217;ll want to have this task run after each deployment:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can create other tasks relatively easily for reindexing and managing the
+searchd daemon. I found a good guide to
+<a href="http://www.updrift.com/article/deploying-a-rails-app-with-thinking-sphinx">deploying a rails app with ThinkingSphinx</a>
+linked from Pat Allan&#8217;s blog. I found a useful set of
+<a href="http://github.com/ruberion/ruberion_server_tools/tree/master/recipes/tasks/ultrasphinx.rb">UltraSphinx capistrano tasks</a>
+in Ruberion&#8217;s server tools plugin on Github. If you chose to host with
+<a href="http://www.engineyard.com/">EngineYard</a>, they can manage either configuration
+for you with their pre-baked builds and deploy tasks.</p>
+
+<h2>Real World Experience</h2>
+
+<p>We ran into a number of issues when setting up UltraSphinx:</p>
+
+<ul>
+<li><p>UltraSphinx loads your models without loading the full rails environment. This means that if
+your models depend on any of your lib files or any gems frozen in vendor/gems, you will have to
+require all of these files explicitly in each model. This is a pain.</p></li>
+<li><p>The fundamentally sound design and code of UltraSphinx are somewhat undermined by poorly
+implemented exception handling. This means that while most of the time things work swimmingly,
+when they fail you&#8217;re really sunk! The errors that you receive are often useless in diagnosing
+the actual problem.</p></li>
+<li><p>We had bugs in our index that only existed on our staging and production slices. These caused
+page counts to be incorrect and nil records to be returned in certain cases. In certain cases it
+also caused 5xx errors.</p></li>
+</ul>
+
+
+<h3>Moving To ThinkingSphinx</h3>
+
+<p>After another Hashrocket team had success moving their project from SOLR to
+ThinkingSphinx, I decided to move our project as well. Moving to ThinkingSphinx
+proved to be a relatively painless experience. The process was essentially
+five-fold:</p>
+
+<ul>
+<li>Uninstall UltraSphinx and install ThinkingSphinx.</li>
+<li>Translate your <code>is_indexed</code> declaration into a @define_index@ block and change your search actions to use the ThinkingSphinx API.</li>
+<li>Rewrite your deployment tasks to run the ThinkingSphinx rake tasks.</li>
+<li>Stop searchd and then run your new configure, index and startd start tasks.</li>
+<li>PROFIT!</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">Jul 14<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/04/18/git-push-just-the-tip.html" title="Previous Post: Git Push: Just The Tip">&laquo; Git Push: Just The Tip</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2008/07/17/ruby-patterns-query-method.html" title="Next Post: Ruby Patterns: Query Method">Ruby Patterns: Query Method &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

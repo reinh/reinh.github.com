@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Git Push: Just The Tip - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="Today we delve into the world of git push, one of the most often used git
+tools. git push is typically used to update a remote ref and associated &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Git Push: Just the Tip</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-18T00:00:00-07:00" pubdate data-updated="true">Apr 18<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Today we delve into the world of <code>git push</code>, one of the most often used git
+tools. <code>git push</code> is typically used to update a remote ref and associated
+objects based on a local ref &#8211; in other words, to push your local changes to an
+upstream repository &#8211; but you can also use it to create or delete remote
+branches and <del>much, much more!</del> actually, that&#8217;s about it.</p>
+
+<!--more-->
+
+
+<h2>Just The Tip</h2>
+
+<p>The most common use of <code>git push</code> is to push your local changes to your public
+upstream repository. Assuming that the upstream is a remote named &#8220;origin&#8221; (the
+default remote name if your repository is a clone) and the branch to be updated
+to/from is named &#8220;master&#8221; (the default branch name), this is done with:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<p>Get used to this. You&#8217;ll be doing it a lot.</p>
+
+<h2>A Bit Deeper</h2>
+
+<p>Git uses the term &#8220;refspec&#8221; when describing the usage of some of its commands.
+A refspec is essentially a name that git can resolve to a commit object. This
+can be the name of a branch or an arbitrary &#8220;SHA1 expression&#8221; such as
+<code>master~4</code>, among
+<a href="http://www.kernel.org/pub/software/scm/git/docs/git-rev-parse.html">others</a>.
+Git gives you a lot of ways to refer to a commit but for most purposes you&#8217;ll
+just use the name of a branch with <code>git push</code>.</p>
+
+<p>The <a href="http://www.kernel.org/pub/software/scm/git/docs/git-pull.html">kernel.org manpage for git pull</a>
+will rather cryptically tell you that &#8220;The canonical format of a
+&lt;refspec&gt; parameter is <code>+?&lt;src&gt;:&lt;dst&gt;</code>&#8221;. Most of the time this translates
+to <code>&lt;branch to push from&gt;:&lt;branch to push to&gt;</code>. The branch to push from and the
+colon are optional. If left out, git will push from the local branch to the
+remote branch of the same name. If no refspec is used at all, git will push all
+&#8220;heads&#8221; (f.e. branches) on the local to matching heads that exist on the
+remote.</p>
+
+<p>In practice, this means that:</p>
+
+<ul>
+<li><code>git push origin</code> will push changes from all local branches to matching branches the origin remote.</li>
+<li><code>git push origin master</code> will push changes from the local master branch to the remote master branch.</li>
+<li><code>git push origin master:staging</code> will push changes from the local master branch to the remote staging branch <em>if it exists</em>.</li>
+</ul>
+
+
+<h2>Tips and Tricks</h2>
+
+<h3>Create a Remote Branch</h3>
+
+<p><code>git push origin master:refs/heads/staging</code> will create the branch <code>staging</code> in
+the origin by copying the local @master@ branch</p>
+
+<h3>Delete a Remote Branch</h3>
+
+<p><code>git push origin :staging</code> will delete the branch <code>staging</code> from the origin repository.</p>
+
+<h3>Set Up A Branch&#8217;s Default Remote</h3>
+
+<p>You can use git config to assign a default remote to a given branch. This
+default remote will be used to push that branch unless otherwise specified.</p>
+
+<p>This is already done for you when you use <code>git clone</code>, allowing you to use <code>git
+push</code> without any arguments to push the local master branch to update the
+origin repository&#8217;s master branch.</p>
+
+<p><code>git config branch.&lt;name&gt;.remote &lt;remote&gt;</code> can be used to specify this manually.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-18T00:00:00-07:00" pubdate data-updated="true">Apr 18<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/git/'>git</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/04/18/git-push-just-the-tip.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/04/09/customize-textile-tags-for-great-justice.html" title="Previous Post: Custom Textile Tags For Great Justice">&laquo; Custom Textile Tags For Great Justice</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2008/07/14/a-thinking-mans-sphinx.html" title="Next Post: A Thinking Man's Sphinx">A Thinking Man's Sphinx &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

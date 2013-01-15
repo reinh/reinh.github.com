@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Adding Epicycles: Copernicus On Software&nbsp;Development - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="Most software projects suffer from increasing complexity over their lifetime.
+One of the most common ways that a project grows in complexity is known &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2008/07/20/adding-epicycles-copernicus-on-software-development.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Adding Epicycles: Copernicus on Software&nbsp;Development</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-20T00:00:00-07:00" pubdate data-updated="true">Jul 20<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Most software projects suffer from increasing complexity over their lifetime.
+One of the most common ways that a project grows in complexity is known as
+&#8220;Adding Epicycles&#8221;.</p>
+
+<!--more-->
+
+
+<p>The geocentric model of the solar system is a very old one. First postulated by
+Plato and Aristotle in the 6th century BC, the idea that the Earth is at the
+center of the universe was later refined and standardized in Claudius Ptolemy&#8217;s
+main astronomical book, Almagest. It is also an excellent example of a very
+common design failure in software development.</p>
+
+<h2>Ptolemy&#8217;s Faulty Assumption</h2>
+
+<p>It seems like a pretty obvious idea: sun, stars, planets&hellip; everything
+<em>looks</em> as if it goes around the Earth. Indeed, it was almost two thousand
+years before Copernicus was able to provide a convincing alternative.</p>
+
+<h2>Ptolemy&#8217;s Great Design Failure</h2>
+
+<p>As people began to make better and better observations of the motions of the
+various heavenly bodies, they began to notice that their movements were often
+far more complex than the Ptolemaic system could allow. The planets were
+particularly troublesome in this regard.</p>
+
+<p>The logical step when a hypothesis no longer fits with observation is to
+reconsider that hypothesis and possibly discard it in place of a more fitting
+candidate. This is precisely what did not happen when Ptolemy set out to
+catalog the arrangements and movements of the celestial spheres.</p>
+
+<p>What he did instead was add smaller circles that the planets move in, and then
+have these circles move on top of their orbital circles. These circles on top
+of circles - or <em>epicycles</em> - form the basis of Ptolemy&#8217;s new and &#8220;improved&#8221;
+geocentric model.</p>
+
+<p>Ptolemy&#8217;s greatest mistake was not made in adopting the geocentric model in the
+first place. It was made in not abandoning it when it no longer fit observed
+fact. Rather than throw out his bad design, he added more and more layers of
+bad design to try to fit the new observations.</p>
+
+<h2>Copernicus&#8217;s Great Refactor</h2>
+
+<p>This process of adding more and more complexity onto complexity continued
+through iteration after iteration for almost two thousand years until
+Copernicus stepped in. He fixed the bad design at the root of the ridiculously
+complex and unwieldy Ptolemaic system by putting the Sun at the center. This
+simple change had a profoundly simplifying effect on our understanding of the
+motion of the planets and other heavenly bodies.</p>
+
+<p>Copernicus&#8217;s heliocentric model is in retrospect a rather simple and obvious
+paradigm shift. Nevertheless, it marked the start of the Scientific Revolution
+and is often regarded as the starting point of modern astronomy.</p>
+
+<h2>Copernicus on Software Development</h2>
+
+<p>What does all of this mean for software developers? It means that if your
+system is built on a bad design, trying to accomodate that problem will only
+lead you to add more and more levels of bad design. Eventually the whole system
+will come crashing down under the weight of this accumulated technical debt.</p>
+
+<p>This process of iteratively adding layers of complexity and bad design to
+attempt to shore up a faulty assumption or hopelessly flawed abstraction is
+called <a href="http://c2.com/cgi/wiki?AddingEpicycles">Adding Epicycles</a> in honor of
+Ptolemy and his great design failure. The right thing to do is to follow
+Copernicus&#8217;s lead and correct the faulty assumption or poor abstraction that is
+at the heart of your design failure. The sooner you do this, the sooner you can
+start simplifying your code.</p>
+
+<p>Correcting a critical design flaw will often cause these layers of circle upon
+circle upon preposterous circle of complexty to vanish, leaving your code clean
+and clear and simple. Just try not to anger the Pope.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-20T00:00:00-07:00" pubdate data-updated="true">Jul 20<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/07/20/adding-epicycles-copernicus-on-software-development.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/07/20/adding-epicycles-copernicus-on-software-development.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/07/17/ruby-patterns-query-method.html" title="Previous Post: Ruby Patterns: Query Method">&laquo; Ruby Patterns: Query Method</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2008/08/10/rocking-the-hoedown.html" title="Next Post: Rocking the Hoedown">Rocking the Hoedown &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

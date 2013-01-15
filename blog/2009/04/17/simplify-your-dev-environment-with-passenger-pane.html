@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Simplify Your Dev Environment With Passenger&nbsp;Pane - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="On OS X? Develop web applications with Ruby? Want drag-and-drop and
+point-and-click development server management? Then you need Passenger Pane.
+We&# &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Simplify Your Dev Environment With Passenger&nbsp;Pane</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-17T00:00:00-07:00" pubdate data-updated="true">Apr 17<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>On OS X? Develop web applications with Ruby? Want drag-and-drop and
+point-and-click development server management? Then you need Passenger Pane.
+We&#8217;ll walk you through the installation process and show you how to get a
+simple Rack application up and running. Thanks to
+<a href="http://jasonnoble.org">Jason Noble</a> for his help getting everything working.</p>
+
+<!--more-->
+
+
+<p>Passenger Pane is an OS X preference pane designed to work in concert with
+Phusion Passenger and your OS X Leopard&#8217;s default Apache2 installation (the
+same one that serves your Web Sharing). Setup is pretty simple and will
+probably take about 10 minutes.</p>
+
+<p>Here&#8217;s what we&#8217;re going to do:</p>
+
+<ol>
+<li>Install Phusion Passenger</li>
+<li>Install Passenger Pane</li>
+<li>Serve a &#8220;Hello World!&#8221; Rack endpoint</li>
+<li>Profit!</li>
+</ol>
+
+
+<h2>Install Phusion Passenger</h2>
+
+<p><a href="http://www.modrails.com">Phusion Passenger</a> is the (not so) new hotness in the
+Rails deployment world. Phusion is great for serving Rails applications via
+Apache in production (especially in concert with Rails Enterprise Edition,
+which provides a 33% memory savings over standard MRI Ruby), but it&#8217;s also
+great for simplifying your development environment.</p>
+
+<p>The Phusion team have done a great job on the passenger install. Here are the
+<a href="http://www.modrails.com/install.html">official installation instructions</a>.
+We&#8217;ll repeat them here for the sake of convenience.</p>
+
+<ol>
+<li><p>Open a Terminal window.</p></li>
+<li><p>Install the passenger gem:</p>
+
+<pre><code>sudo gem install passenger
+</code></pre></li>
+<li><p>Install the passenger apache2 module:</p>
+
+<pre><code>sudo passenger-install-apache2-module
+</code></pre></li>
+<li><p>Include the module and some supporting configuration settings into an apache conf file. The code will be provided by the passenger install script.</p></li>
+<li><p>Finally, add a <code>Directory</code> directive to your apache2 config that
+allows access to the directory where your app source codes are located. You
+can put this at the bottom of your <code>passenger.conf</code> file
+(replace my source directory with yours):</p>
+
+<pre><code>&lt;Directory /Users/reinh/code/&gt;
+  Order Allow,Deny
+  Allow from all
+&lt;/Directory&gt;
+</code></pre></li>
+</ol>
+
+
+<p><strong>Note</strong>: We put the passenger apache configuration in
+<code>/etc/apach2/other/passenger.conf</code> (a file we created). The default apache2
+<code>httpd.conf</code> imports all <code>.conf</code> files in <code>/etc/apache2/other</code>.</p>
+
+<h2>Install Passenger Pane</h2>
+
+<p><a href="http://www.fngtps.com/2008/06/putting-the-pane-back-into-deployment">Passenger Pane</a>
+gives you a Preference Pane that lets you add, remove and manage apps deployed
+on Phusion Passenger. Drag-and-drop to serve a new app and restart with a
+single click &mdash; it even provides host entries for each app so you don&#8217;t
+have to mess with virtual hosts or your hosts file. This is great for serving
+multiple applications simultaneously or just generally being awesome.</p>
+
+<p>Installation is simple. Download the preference pane from
+<a href="http://www.fngtps.com/2008/06/putting-the-pane-back-into-deployment">their homepage</a>
+and double-click to install. If you installed Passenger correctly (as above),
+this should just work. If not, look for errors in Console.app or a helpful
+notice in the preference pane and ask for help on the
+<a href="http://groups.google.com/group/phusion-passenger">Passenger forums</a> or in the
+<code>#passenger</code> channel on <code>irc.freenode.net</code>.</p>
+
+<p>After installing Passenger Pane, you will need to restart Apache. The simplest
+way to do this on OS X is to open the Sharing preference pane and uncheck and
+recheck Web Sharing.</p>
+
+<h2>Serve A &#8220;Hello World!&#8221; Rack Endpoint</h2>
+
+<p>Let&#8217;s test that everything is working by creating a simple
+<a href="http://rack.rubyforge.org/">Rack</a> &#8220;Hello World!&#8221; endpoint.</p>
+
+<ol>
+<li><p>Install <code>rack</code>:</p>
+
+<pre><code>sudo gem install rack
+</code></pre></li>
+<li><p>Create a new directory called <code>rack-hello-world</code>.</p></li>
+<li><p>Add a file inside it called <code>config.ru</code> with these contents:</p>
+
+<p>&#8220;` ruby</p>
+
+<pre><code>run lambda{|env| [200, {"Content-Type" =&gt; "text/plain"}, ["Hello World!"]]}
+</code></pre>
+
+<p>&#8220;`</p></li>
+<li><p>Create a <code>public</code> directory inside <code>rack-hello-world</code> (you&#8217;ll see why later).</p></li>
+<li><p>Drag the <code>rack-hello-world</code> folder into your Passenger Pane panel (if
+you&#8217;re using TextMate, you can drag it from the project panel). You will
+probably need to click the lock first to allow modifications.</p></li>
+<li><p>Browse to <a href="http://rack-hello-world.local">http://rack-hello-world.local</a> and behold the awesome!</p></li>
+<li><p>Profit!!!</p></li>
+</ol>
+
+
+<p>If you&#8217;ve done this correctly, your Passenger Pane should look similar to this:</p>
+
+<p><img class="none" src="http://reinh.com/images/passenger_pane.png"></p>
+
+<p>Your browser should be showing you your glorious &#8220;Hello World!&#8221; homepage.</p>
+
+<p>Now you can drag in the app folders of any Rails, Merb, Sinatra or Ramaze
+applications and have them instantly served by Passenger. In fact, any Ruby web
+application that can run on Rack can be run in Passenger Pane. How&#8217;s that for a
+painless local development environment?</p>
+
+<p><strong>Note:</strong> Why (I hear you asking) did we create a public directory? The answer is
+that Apache expects to serve a public directory and will fail if one is not
+found under the root of the app you&#8217;re serving. If you had not created the
+directory, you would have to look at your apache error log, which is usually located at
+<code>/var/log/apache2/error_log</code>, to find out what went wrong.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-04-17T00:00:00-07:00" pubdate data-updated="true">Apr 17<span>th</span>, 2009</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html" title="Previous Post: A Git Workflow for Agile Teams">&laquo; A Git Workflow for Agile Teams</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/09/21/ch-ch-ch-changes.html" title="Next Post: Ch-Ch-Ch-Changes">Ch-Ch-Ch-Changes &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

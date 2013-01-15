@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Hack && Ship - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="When the OG Consulting guys were
+down at Hashrocket working on our latest 3-2-1, they
+introduced us to a pair of bash scripts called hack and ship &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2008/08/27/hack-and-and-ship.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hack && Ship</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-27T00:00:00-07:00" pubdate data-updated="true">Aug 27<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>When the <a href="http://ogtastic.com/">OG Consulting</a> <a href="http://b.logi.cx/">guys</a> were
+down at <a href="http://hashrocket.com/">Hashrocket</a> working on our latest 3-2-1, they
+introduced us to a pair of bash scripts called <em>hack</em> and <em>ship</em> that they use
+to streamline their everyday git workflow. They&#8217;re so useful that we adopted
+them immediately and we&#8217;ve been using them religiously ever since. I estimate
+that these little scripts save me about an hour a day and, what&#8217;s more, they
+make it easy to follow the <em>commit early, commit often</em> mindset that&#8217;s so
+useful to the agile process.</p>
+
+<!--more-->
+
+
+<h2>Simple Software Process</h2>
+
+<p>Here&#8217;s our typical workflow (before hack and ship):</p>
+
+<ol>
+<li>Start a feature in &#8220;Pivotal Tracker&#8221;:https://www.pivotaltracker.com</li>
+<li>Checkout a working branch for this feature</li>
+<li>Write a test</li>
+<li>Write an implementation to make the test pass</li>
+<li>Repeat 3 and 4 until the feature is complete</li>
+<li>Commit changes to git with a &#8220;useful commit message&#8221;:http://www.tpope.net/node/106</li>
+<li>Checkout the master branch</li>
+<li>Update the master branch</li>
+<li>Checkout the working branch</li>
+<li>Rebase the master branch into the working branch</li>
+<li>Checkout the master branch</li>
+<li>Merge the working branch into the master branch</li>
+<li>Push the changes to the origin repository (usually on &#8220;github&#8221;:https://github.com/)</li>
+<li>Repeat.</li>
+</ol>
+
+
+<p>This is pretty simple (if a bit longwinded). We each probably do this dozens of times a day. Could it be simpler? You bet!</p>
+
+<h2>Simplified Software Process</h2>
+
+<p>I&#8217;d like to introduce you to the Simplified Software Process. While it may not
+be a very good process, it does have one thing going for it: it&#8217;s <em>simple</em>. We
+like simple. So when we saw Rick Bradley&#8217;s super simple bash scripts for
+automating these common git tasks, we jumped on them. These scripts are
+designed to work with the basic git workflow we outlined above. And they have
+awesome names.</p>
+
+<p>Here&#8217;s <a href="gist.github.com/7641"><em>hack</em></a>.</p>
+
+<div><script src='https://gist.github.com/7641.js'></script>
+<noscript><pre><code>#!/bin/sh -x
+# git name-rev is fail
+CURRENT=`git branch | grep '\*' | awk '{print $2}'`
+git checkout master
+git pull origin master
+git checkout ${CURRENT}
+git rebase master</code></pre></noscript></div>
+
+
+<p>And <a href="http://gist.github.com/7642"><em>ship</em></a>.</p>
+
+<div><script src='https://gist.github.com/7642.js'></script>
+<noscript><pre><code>#!/bin/sh -x
+# git name-rev is fail
+CURRENT=`git branch | grep '\*' | awk '{print $2}'`
+git checkout master
+git merge ${CURRENT}
+git push origin master
+git checkout ${CURRENT}</code></pre></noscript></div>
+
+
+<p>Now our process looks like this:</p>
+
+<ol>
+<li>Start a feature in Pivotal Tracker</li>
+<li>Checkout a working branch for this feature</li>
+<li>Write a test</li>
+<li>Write an implementation to make the test pass</li>
+<li>Repeat 3 and 4 until the feature is complete</li>
+<li>Commit changes to git with a useful commit message</li>
+<li><code>hack</code></li>
+<li><code>ship</code></li>
+<li>Repeat.</li>
+</ol>
+
+
+<p>We even wrote ourselves <a href="http://gist.github.com/7640"><em>a little alias</em></a> to make this even easier:</p>
+
+<div><script src='https://gist.github.com/7640.js'></script>
+<noscript><pre><code>alias ssp=&quot;hack &amp;&amp; rake &amp;&amp; ship&quot;</code></pre></noscript></div>
+
+
+<p>Which brings the workflow down to three easy steps:</p>
+
+<ol>
+<li>Test</li>
+<li>Implement</li>
+<li><code>ssp</code></li>
+</ol>
+
+
+<p>Combine this with a Continuous Integration build like
+<a href="http://cruisecontrolrb.thoughtworks.com/">cruisecontrol.rb</a> and a deployment
+to a staging server that takes less than a minute - we love
+<a href="http://engineyard.com/">EngineYard</a> - and you have the perfect recipe for
+agile, iterative, test-driven, micro-release oriented development. I&#8217;ve never
+been happier with my development process.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-08-27T00:00:00-07:00" pubdate data-updated="true">Aug 27<span>th</span>, 2008</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/08/27/hack-and-and-ship.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/08/27/hack-and-and-ship.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/08/10/rocking-the-hoedown.html" title="Previous Post: Rocking the Hoedown">&laquo; Rocking the Hoedown</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2008/09/12/story-driven-development-with-rails.html" title="Next Post: Story Driven Development With&nbsp;Rails">Story Driven Development With&nbsp;Rails &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

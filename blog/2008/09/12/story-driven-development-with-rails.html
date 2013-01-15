@@ -1,0 +1,590 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Story Driven Development With&nbsp;Rails - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="As a follow up on writing incremental stories,
+we&#8217;re going to take the first story and walk through a behavior driven
+development process to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Story Driven Development With&nbsp;Rails</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-12T00:00:00-07:00" pubdate data-updated="true">Sep 12<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+we&#8217;re going to take the first story and walk through a behavior driven
+development process to implement it in a simple Rails application.</p>
+
+<p>We will focus on making small, iterative changes and following a strict
+test-first philosophy where we write granular unit tests and implement them
+with just enough code to make them pass.</p>
+
+<!--more-->
+
+
+<p>Let&#8217;s review our first story:</p>
+
+<figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me
+</span><span class='line'>
+</span><span class='line'>Acceptance:
+</span><span class='line'>
+</span><span class='line'>* All projects shown in list
+</span><span class='line'>* List is paginated
+</span><span class='line'>* List is sorted by age
+</span><span class='line'>
+</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At this point, let&#8217;s assume that this story is on top of our current iteration.
+First, we&#8217;ll need to review the story for any missing information and
+communicate with the client to clear up any questions. Keep in mind that a
+story is just a way to capture a conversation about a feature. It is not set in
+stone. After talking to the client, we find that we will need to display a
+project&#8217;s author name and title and that the title will need to link to that
+project&#8217;s page. Let&#8217;s update the story appropriately.</p>
+
+<figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me
+</span><span class='line'>
+</span><span class='line'>Acceptance:
+</span><span class='line'>
+</span><span class='line'>* All projects shown in list
+</span><span class='line'>* Show title for each project
+</span><span class='line'>* Show author name for each project
+</span><span class='line'>* Project title links to the project's page
+</span><span class='line'>* List is paginated
+</span><span class='line'>* List is sorted by project age
+</span><span class='line'>
+</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now that the story is complete, deliverable and acceptable, we can begin work
+on the new feature. A implementation plan should be forming in your head. Now
+is the time to divide the work into testable units. In our case we already have
+a Project model with the requisite fields (let&#8217;s say) so our work will focus on
+the controller and view.</p>
+
+<h2>Test All The F&#8212;ing Time</h2>
+
+<p>Client sign-off on well written acceptance tests means that the specifications
+you write and the feature that is implemented as a result will be more closely
+in line with the client&#8217;s expectations. This minimizes the kind of impedance
+mismatch between expectation and execution that so often plagues a project with
+poor client communication and a disorganized process.</p>
+
+<p>Now it&#8217;s time to take our acceptance tests and use them to drive our iterative,
+test-driven development process. Let&#8217;s take it from the top.</p>
+
+<h3>All Projects Shown in List</h3>
+
+<p>Let&#8217;s start with the controller. A list of projects needs an index action.
+Starting at the top, we will need to load all of the projects. Let&#8217;s write a
+test for this:</p>
+
+<figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">it</span> <span class="s2">&quot;loads all the projects&quot;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="n">projects</span> <span class="o">=</span> <span class="o">[</span><span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span><span class="o">]</span>
+</span><span class='line'>      <span class="no">Project</span><span class="o">.</span><span class="n">stub!</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">get</span> <span class="s1">&#39;index&#39;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">assigns</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span><span class="o">.</span><span class="n">should</span> <span class="o">==</span> <span class="n">projects</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
+eliminating the database from our test but is potentially more brittle since we
+cannot be sure that this interface point to our Project model will not need to
+change in the future.</p>
+
+<p>On a side note, I tend to view controller tests as integration-level tests
+rather than unit tests. As such, I usually do write tests that touch the
+database since these are often less brittle. If you write tests that touch the
+database, ActiveRecord factories such as <a href="http://giantrobots.thoughtbot.com/2008/6/6/waiting-for-a-factory-girl">Factory Girl</a>
+or <a href="http://b.logi.cx/2007/11/26/object-daddy">object daddy</a> are useful for
+populating the database with valid records in known states.</p>
+
+<p>Now we can write the implementation:</p>
+
+<figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">index</span>
+</span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="no">Project</span><span class="o">.</span><span class="n">all</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then we have to display a list of projects. We&#8217;ll write a view test to cover this:</p>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span>
+</span><span class='line'>    <span class="vi">@project</span> <span class="o">=</span> <span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="o">[</span><span class="vi">@project</span><span class="o">]</span>
+</span><span class='line'>    <span class="n">assigns</span><span class="o">[</span><span class="ss">:projects</span><span class="o">]</span> <span class="o">=</span> <span class="vi">@projects</span>
+</span><span class='line'>    <span class="n">render</span> <span class="s1">&#39;projects/index&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should include a list of projects&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&gt;</span> <span class="vi">@projects</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And the implementation:</p>
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
+testing only for semantically appropriate tags, classes and ids whenever
+possible. Using semantically rich markup in your views will make it much easier
+to write robust view tests &#8211; and is also a great practice for its own sake.
+{:.note}</p>
+
+<h3>Show Title for Each Project</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .title&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Show Author Name for Each Project</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .author_name&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">author_name</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
+There&#8217;s a good chance that this name will be taken from an associated User or
+Author model in any non-trivial Rails application. From an object oriented
+standpoint, however, having the author name hang directly from the Project
+model improves encapsulation.</p>
+
+<p>The benefits of this were already seen in the test, where we were able to stub
+<code>author_name</code> directly on the Project mock. Without the accessor, we would be
+forced to stub <code>#author</code> on the Project mock to return an Author mock that then
+stubs <code>#name</code> just so that we could properly test the method chain
+<code>project.author.name</code> that is used in the view. Violating the <a href="http://en.wikipedia.org/wiki/Law_of_Demeter">Law of Demeter</a>
+makes testing harder.</p>
+
+<h3>Project Title Links to the Project&#8217;s Page</h3>
+
+<figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span> <span class="s1">&#39;li.project .title a[href=?]&#39;</span><span class="p">,</span> <span class="n">project_path</span><span class="p">(</span><span class="vi">@project</span><span class="p">),</span>
+</span><span class='line'>      <span class="ss">:text</span> <span class="o">=&gt;</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= link_to project.title, project <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The story is now about half complete. I&#8217;ll leave pagination and default sort
+order as an exercise for the user. In fact, these could also have been broken
+out into a secondary story or stories given that what we have done so far is an
+incremental unit of work.</p>
+
+<p>I hope this rather contrived example shows how stories with well written
+acceptance tests inform a test- or behavior- driven development process and
+help bridge the gap between what the client expects and what the developement
+team delivers.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-12T00:00:00-07:00" pubdate data-updated="true">Sep 12<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/agile/'>Agile</a>, <a class='category' href='/blog/categories/rails/'>Rails</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/tdd/'>TDD</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/08/27/hack-and-and-ship.html" title="Previous Post: Hack && Ship">&laquo; Hack && Ship</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html" title="Next Post: A Git Workflow for Agile Teams">A Git Workflow for Agile Teams &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

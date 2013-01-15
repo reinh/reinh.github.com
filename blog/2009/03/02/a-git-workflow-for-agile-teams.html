@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>A Git Workflow for Agile Teams - reinh.com</title>
+  <meta name="author" content="Rein Henrichs">
+
+  
+  <meta name="description" content="An efficient workflow for developers in Agile teams that handles features and
+bugs while keeping a clean and sane history. At Hashrocket we use git &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="reinh.com" type="application/atom+xml">
+  <script type="text/javascript" src="http://use.typekit.com/nmd2mgp.js"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">reinh.com</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:reinh.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul role=main-navigation>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">A Git Workflow for Agile Teams</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-02T00:00:00-08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>An efficient workflow for developers in Agile teams that handles features and
+bugs while keeping a clean and sane history.</p>
+
+<p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
+Agile mentoring and training. Git gives us the flexibility to design a version
+control workflow that meets the needs of either a fully Agile team or a team
+that is transitioning towards an Agile process.</p>
+
+<!--more-->
+
+
+<p>There are many usable git workflows. Indeed, git is really &#8220;a tool for
+designing VCS workflows&#8221; rather than a Version Control System itself. Or, as
+Linus would say, git is just a stupid content tracker.</p>
+
+<p>This is by no means a normative document or my attempt to define The One True
+Workflow. I have found this workflow to be productive and relatively painless,
+especially for teams that are still learning and transitioning towards a more
+Agile process. I invite you to comment below and describe the git workflow that
+works best for you.</p>
+
+<h2>Credits</h2>
+
+<p>Anyone interested in using git in an Agile environment should read Josh
+Susser&#8217;s <cite>Agile Git and the Story Branch Pattern</cite>. This workflow
+is based largely on his.</p>
+
+<p>The process of squashing commits into more atomic and incremental units has
+been described by Justin Reagor in <cite>A &#8220;Squash&#8221; WorkFlow in Git</cite>.
+Justin&#8217;s post also references a <code>git rebase -i</code> walkthrough by MadCoder
+that provides a good explanation the interactive rebase process.</p>
+
+<p>Thanks also to <a href="http://www.rickbradley.com/">Rick Bradley</a> of <a href="http://www.ogtastic.com/">OG Consulting</a>
+and <a href="http://blog.hasmanythrough.com/">Josh Susser</a> of <a href="http://pivotallabs.com">Pivotal Labs</a>
+for many fruitful and often hilarious discussions about git, Agile and ponies.</p>
+
+<h2>Feature Development</h2>
+
+<p>Our git feature development workflow consists of these steps:</p>
+
+<ol>
+<li>Pull to update your local master</li>
+<li>Check out a feature branch</li>
+<li>Do work in your feature branch, committing early and often</li>
+<li>Rebase frequently to incorporate upstream changes</li>
+<li>Interactive rebase (squash) your commits</li>
+<li>Merge your changes with master</li>
+<li>Push your changes to the upstream</li>
+</ol>
+
+
+<p>First, and while in your master branch (<code>git checkout master</code>), pull in the
+most recent changes:</p>
+
+<pre><code>git pull origin master
+</code></pre>
+
+<p>This should never create a merge commit because we are never working directly
+in master.</p>
+
+<p><em>NB:</em> Whenever you perform a pull, merge or rebase, make sure that you
+run tests directly afterwards. Git may not show any conflicts but that doesn&#8217;t
+mean that two changes are compatible. Also run tests before you commit (of
+course).</p>
+
+<p>We begin with the topmost available story in <a href="http://pivotaltracker.com">Pivotal Tracker</a>.
+Let&#8217;s say that it&#8217;s <em>#3275: User Can Add A
+Comment To a Post</em>. First, check out a feature branch named with the story id
+and a short, descriptive title:</p>
+
+<pre><code>git checkout -b 3275-add-commenting
+</code></pre>
+
+<p>The id allows us to easily track this branch back to the story that spawned it.
+The title is there to give us humans a little hint as to what&#8217;s in it. Do some
+work on this branch, committing early and often (for instance, whenever your
+tests pass). Rebase against the upstream frequently to prevent your branch from
+diverging significantly:</p>
+
+<pre><code>git fetch origin master
+git rebase origin/master
+</code></pre>
+
+<p><em>NB:</em> This is often done by checking master out and pulling, but this method
+requires extra steps:</p>
+
+<pre><code>git checkout master
+git pull
+git checkout 3275-add-commenting
+git rebase master
+</code></pre>
+
+<p>Once work on the feature is complete, you will have a branch with a lot of
+small commits like &#8220;adding a model and a migration&#8221;, &#8220;adding a controller and
+some views&#8221;, &#8220;oh crap - adding tests&#8221; and so on. This is useful while
+developing but larger, incremental commits are more easier to maintain. We will
+use an interactive rebase to squash them together. Also, squashing
+these commits together will allow us to pretend that we wrote the tests
+first&hellip;</p>
+
+<p>We want the rebase to affect only the commits we&#8217;ve made to this branch, not
+the commits that exist on the upstream. To ensure that we only deal with the
+&#8220;local&#8221; commits, use:</p>
+
+<pre><code>git rebase -i origin/master
+</code></pre>
+
+<p>Git will display an editor window with a list of the commits to be modified,
+something like:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+pick 9f5c362 Adding Comment controller, helper, spec
+pick dcd4813 Adding Comment relationship with Post
+pick 977a754 Comment belongs to a User
+pick 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Now we tell git what we to do. Change these lines to:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+squash 9f5c362 Adding Comment controller, helper, spec
+squash dcd4813 Adding Comment relationship with Post
+squash 977a754 Comment belongs to a User
+squash 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Save and close the file. This will squash these commits together into one
+commit and present us with a new editor window where we can give the new commit
+a message. We&#8217;ll use the story id and title for the subject and list the
+original commit messages in the body:</p>
+
+<pre><code>[#3275] User Can Add A Comment To a Post
+
+* Adding Comment model, migrations, spec
+* Adding Comment controller, helper, spec
+* Adding Comment relationship with Post
+* Comment belongs to a User
+* Comment form on Post show page
+</code></pre>
+
+<p>This also follows Tim Pope&#8217;s <a href="http://www.tpope.net/node/106">git commit message best
+practices</a>. Now, save and close your editor.
+This commit is now ready to be merged back into master. First rebase against
+any recent changes in the upstream. Then merge your changes back into master:</p>
+
+<pre><code>git checkout master
+git merge 3275-add-commenting
+</code></pre>
+
+<p>And finally, push your changes to the upstream:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<h2>Bug Fixes</h2>
+
+<p>Bugfixes will use the same workflow as feature work. Name your bugfix branch
+after the bug id and give it a descriptive name. Prefix the branch name with
+&#8220;bug&#8221; to help you keep track of them, for instance:
+<code>bug-3845-empty-comments-allowed</code>.</p>
+
+<p>Do work in your bugfix branch, committing early and often. Rebase frequently
+against the upstream and again when you are finished. Then, use an interactive
+rebase to squash <em>all</em> the commits together. Use the bug id and title for the
+subject of the new commit. Include &#8220;BUG&#8221; or &#8220;BUGFIX&#8221; to make these commits
+easier to identify. For instance:</p>
+
+<pre><code>[#3278] BUGFIX: Empty Comments Should Not Be Allowed
+</code></pre>
+
+<p><em>NB:</em> With a bugfix, squash the commits down into one and exactly one commit
+that completely represents that bugfix. Half of a bugfix is useless.</p>
+
+<h2>QA Branch Management</h2>
+
+<p>In a truly Agile process, as Josh Susser explained to me, you simply deploy
+directly from your latest &#8220;green&#8221; build. While this may seem impossible, there
+are real world examples of the viability of Continuous Deployment.</p>
+
+<p>For most of the teams we train, this sort of extreme agility is a goal rather
+than a way of life. They are transitioning towards a fully Agile process from a
+more rigorous one and often have a significant investment in Quality Assurance.
+For these teams, I recommend a compromise solution: Use a remote QA branch that
+is fast-forward merged from the latest &#8220;green&#8221; (all CI tests pass) master build
+for QA deployments.</p>
+
+<p>If you don&#8217;t already have a QA branch, create one from the current master
+(assuming it&#8217;s green) and then push it to your git host:</p>
+
+<pre><code>git checkout -b qa
+git push origin qa:refs/heads/qa
+</code></pre>
+
+<p>To update an existing QA branch with the latest changes from master, do this:</p>
+
+<pre><code>git checkout qa
+git merge master
+git push origin qa
+</code></pre>
+
+<p>Ensure that the master branch is green when you merge. Also ensure that this
+merge is always a Fast Forward merge. If it is not, it means that commits have
+been made in the QA branch that are not in the master branch. QA should be
+merged into from master only, never worked on directly.</p>
+
+<h2>Production Tagging</h2>
+
+<p>While an Agile team will be deploying continuously, most teams will require a
+more rigorous vetting process before a build is deployed to production. Tags
+provide a simple way for QA to vet a particular build.</p>
+
+<p>Once QA has signed off on a build as ready for production, a tag should be made
+and deployed. In git, a tag can be created with <code>git tag &lt;name&gt;</code>. It is
+important that tag naming is consistent and it is useful if they sort in a
+meaningful way (latest last, for instance). Two good options are a timestamp or
+product version. Use whichever is more meaningful to your team.</p>
+
+<p>The process of creating a timestamped production tag can be automated with a
+simple script or a git alias like this one:</p>
+
+<pre><code>git config alias.datetag '!git tag `date "+%Y%m%d%H%M"`'
+</code></pre>
+
+<p>With this alias, <code>git datetag</code> will create a new tag from <code>HEAD</code> with the
+current timestamp. You will want to be in the QA branch. If the QA branch has
+moved beyond the last commit vetted by your QA team, be sure to checkout that
+commit first.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-02T00:00:00-08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/agile/'>Agile</a>, <a class='category' href='/blog/categories/git/'>git</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/09/12/story-driven-development-with-rails.html" title="Previous Post: Story Driven Development With&nbsp;Rails">&laquo; Story Driven Development With&nbsp;Rails</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html" title="Next Post: Simplify Your Dev Environment With Passenger&nbsp;Pane">Simplify Your Dev Environment With Passenger&nbsp;Pane &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("reinh", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
+  
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Rein Henrichs -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> -
+  <a href="http://typekit.com/colophons/nmd2mgp">Typekit colophon</a>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

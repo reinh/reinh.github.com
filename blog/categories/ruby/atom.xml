@@ -1,0 +1,1021 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ruby | reinh.com]]></title>
+  <link href="http://reinh.github.com/blog/categories/ruby/atom.xml" rel="self"/>
+  <link href="http://reinh.github.com/"/>
+  <updated>2013-01-15T15:14:10-08:00</updated>
+  <id>http://reinh.github.com/</id>
+  <author>
+    <name><![CDATA[Rein Henrichs]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Building a Turing Machine Simulator With Ruby (Part&nbsp;1)]]></title>
+    <link href="http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html"/>
+    <updated>2011-09-03T17:41:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1</id>
+    <content type="html"><![CDATA[<p>To better understand Turing's machine and its contributions to mathematics and
+computer science, we will build a simulator in Ruby. This simulator will take a
+description of the machine's configuration, create a model of the machine, and
+run through its steps. We will be able to observe the action of the head and
+changes to the tape at each step. Hopefully this will serve to illuminate some
+aspects of Turing's machine that might otherwise be less accessible.</p>
+
+<!--more-->
+
+
+<p>Although the Turing machine is often thought of as prefiguring later computer
+science innovations such as the state machine, its original purpose was quite
+different. Turing created his machine in an attempt to understand the limits of
+mechanical computation. That is to say, the limits of <em>computability</em>. The
+paper that introduced the Turing machine, published in 1936, refers to
+"computable numbers" and their use in solving David Hilbert's <em><a href="http://en.wikipedia.org/wiki/Entscheidungsproblem">Entscheidungsproblem</a></em>, or
+"decision problem".</p>
+
+<h2>Turing's Marvelous Machine</h2>
+
+<p>Informally, a Turing machine is a mathematical model of a machine that
+mechanically operates on a tape. This tape contains squares where the machine
+can read or print a symbol using a tape head. The machine can also move left
+and right over the tape, one square at a time.  The machine's operation is
+fully determined by a list of elementary instructions such as "in state 42, if
+the symbol seen is 0, print a 1; if the symbol seen is 1, shift to the right
+and change into state 17; in state 17, if the symbol seen is 0, print a 1 and
+change into state 6;" etc. Turing called these instructions <em>m-configurations</em>.
+Modern computer scientists typically refer to them as states (as the Turing
+machine is a type of <a href="http://en.wikipedia.org/wiki/Finite-state_machine">Finite-state machine</a>). I will refer to
+them interchangeably as "instructions" or "states". Turing, in his paper,
+labeled these instructions using gothic script lower-case letters.  We will
+simply use lower-case letters.</p>
+
+<p>A bit more formally, a Turing machine can be specified as the 3-tuple <script type="math/tex">M= \langle Q, \Gamma, I \ \rangle</script>. <script type="math/tex">Q</script> is a finite, non-empty set of <em>states</em> where <script type="math/tex">q_0 \in Q</script> is the first state; <script type="math/tex">\Gamma</script> is a finite, non-empty set of <em>tape alphabet/symbols</em> with <script type="math/tex">S_0 \in \Gamma</script> representing a blank, also called <script type="math/tex">None</script> (the only symbol allowed to occur on the tape infinitely often at any step during the computation); and <script type="math/tex">I</script> is a finite, non-emtpy set of instructions. An instruction <script type="math/tex">i \in I</script> can be defined with the 5-tuple, or <em>quint</em>, <script type="math/tex">\langle q_i, S_j, S_k/N/E, L/R, q_m \rangle</script>, which consists of the following:</p>
+
+<ul>
+<li><script type="math/tex">q_i \in Q </script>, the current state.</li>
+<li><script type="math/tex">S_j \in \Gamma</script>, the symbol scanned.</li>
+<li>The symbol to be printed
+
+<ul>
+<li><script type="math/tex">S_k \in \Gamma</script>, print the symbol <script type="math/tex">S_k</script></li>
+<li><script type="math/tex">N</script>, equivalent to <script type="math/tex">S_j</script>, indicates a "noop" (alternatively, print the current symbol again).</li>
+<li><script type="math/tex">E</script>, equivalent to <script type="math/tex">S_0</script>, print a blank (erasure).</li>
+</ul>
+</li>
+<li>A head movement instruction:
+
+<ul>
+<li><script type="math/tex">L</script>, move the head left.</li>
+<li><script type="math/tex">R</script>, move the head right.</li>
+</ul>
+</li>
+<li><script type="math/tex">q_m \in Q</script>, the new state.</li>
+</ul>
+
+
+<p>This is a bit less formal than the definition used by Hopcroft and Ullman, for
+instance, but should suffice for our purposes.</p>
+
+<h2>Our First Turing Machine</h2>
+
+<p>With the formal definition out of the way, let's turn to Turing's first
+machine, which computes the sequence <em>0 1 0 1 0 1&hellip;</em>. This machine's 3-tuple looks like this:</p>
+
+<ul>
+<li><em>Q</em>, the states: <em>{ b, c, e, f }</em></li>
+<li><em>&Gamma;</em>, the symbols: <em>{ 0, 1}</em></li>
+<li><em>I</em>, the instructions: <script type="math/tex"> \{ \langle b, None, 0, R, c \rangle,  \langle c, None, N, R, e \rangle,  \langle e, None, 1, R, f \ \rangle,  \langle f, None, N, R, b \rangle \} </script></li>
+</ul>
+
+
+<p>In Turing's original table form, these same instructions are represented as:</p>
+
+<table class="text-center">
+    <tbody>
+        <tr> <th colspan="2">Configuration</th> <th colspan="2">Behavior</th> </tr>
+        <tr> <th>m-configuration</th> <th>Tape symbol</th> <th>Tape operations</th> <th>Final m-configuration</th> </tr>
+        <tr> <td>b</td> <td>None</td> <td>P0, R</td> <td>c</td> </tr>
+        <tr> <td>c</td> <td>None</td> <td>R</td>     <td>e</td> </tr>
+        <tr> <td>e</td> <td>None</td> <td>P1, R</td> <td>f</td> </tr>
+        <tr> <td>f</td> <td>None</td> <td>R</td>     <td>b</td> </tr>
+    </tbody>
+</table>
+
+
+<p>Turing describes the above table as follows:</p>
+
+<p><blockquote><p>This [example] table (and all succeeding tables of the same kind) is to be understood to mean that for a configuration described in the first two columns the operations in the third column are carried out successively, and the machine then goes over into the m-configuration in the final column</p></blockquote></p>
+
+<h2>Once Again, With ASCII</h2>
+
+<p>For our Turing machine simulator, I decided to use an ASCII representation of
+the Turing machine's instructions. In this format, the instructions look like
+this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing's First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>b, None, P0R, c
+</span><span class='line'>c, None, R,   e
+</span><span class='line'>e, None, P1R, f
+</span><span class='line'>f, None, R,   b</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The m-configurations (instructions) in my machines will begin with <em>b</em>, just as Turing's did. (I believe he used <em>b</em> for <em>begin</em>.)</p>
+
+<p>The BNF grammar for this representation is:</p>
+
+<pre><code>&lt;instruction&gt; ::= &lt;ident&gt; "," &lt;symbol&gt; "," &lt;operation&gt; "," &lt;ident&gt; &lt;EOL&gt;
+      &lt;ident&gt; ::= &lt;char&gt;
+      &lt;symbol ::= &lt;char&gt; | "None"
+  &lt;operation&gt; ::= &lt;movement&gt; | &lt;print&gt; &lt;movement&gt;
+      &lt;print&gt; ::= 'P' &lt;char&gt;
+    &lt;movement ::= 'R' | 'L'
+</code></pre>
+
+<h2>Representing An Instruction</h2>
+
+<p>To begin modelling our simulated Turing machine, we need some way to represent
+instructions internally. We'll use Ruby arrays as tuples and Ruby symbols as,
+well, symbols (with the exception of <em>None</em>, <em>0</em> and <em>1</em>, which will be be
+represented as <code>nil</code> and the integers <code>0</code> and <code>1</code>, respectively). Tape operations will be represented as another array of tuples, to wit: <em>Pn</em> as <code>[ :print, n ]</code>, <em>E</em> as <code>[ :erase ]</code>, <em>L</em> as <code>[ :left ]</code>, and <em>R</em> as <code>[ :right ]</code>.</p>
+
+<p>Here is our Ruby representation of the above instruction list:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing's First Example (Ruby)  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:b</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">0</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:c</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:c</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:e</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:e</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">1</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:f</span> <span class="o">]</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">[</span> <span class="ss">:f</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:b</span> <span class="o">]</span>
+</span><span class='line'><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Parsing An Instruction</h2>
+
+<p>Writing a parser for the ASCII instruction format is a fun little exercise. As
+a Turing machine is a finite-state machine, it should be no surprise that this
+specification grammar forms a regular language (which can be accepted with a
+finite-state machine). This means that we can parse it with regular
+expressions---without having two problems! (Actually, we'll use the comma
+separation to make tokenization a bit easier with <code>String#split</code>, but we're
+getting ahead of ourselves.)</p>
+
+<p>We'll use a <code>Turing::Parser</code> class to parse the entire specification. It will
+split lines and delegate to <code>Turing::Parser::Line</code> class to parse individual
+instruction lines. This in turn will need to parse (lex) individual tokens into a Ruby
+representation. We'll start there:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_token()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;case token</span>
+</span><span class='line'><span class="sr">when &quot;None&quot; then nil</span>
+</span><span class='line'><span class="sr">when &quot;0&quot;    then 0</span>
+</span><span class='line'><span class="sr">when &quot;1&quot;    then 1</span>
+</span><span class='line'><span class="sr">else token.intern</span>
+</span><span class='line'><span class="sr">end</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>This will take a token like "None" and return its Ruby representation, in this
+case <code>nil</code>. Bits will be converted to Ruby Integers (close enough). Characters
+will be interned (converted to Ruby Symbols).</p>
+
+<p>Next, we'll deal with the operations. We can write a simple string scanner that
+will lex the operation string and turn it into a list of operation tuples (as
+described above).</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_operations()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">parse_operations</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;actions.scan(/</span><span class="n">P</span><span class="o">.|</span><span class="n">R</span><span class="o">|</span><span class="n">L</span><span class="o">|</span><span class="n">E</span><span class="o">/</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">action</span><span class="o">|</span>
+</span><span class='line'>  <span class="k">case</span> <span class="n">action</span>
+</span><span class='line'>  <span class="k">when</span> <span class="sr">/P(.)/</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:print</span><span class="p">,</span> <span class="n">parse_token</span><span class="p">(</span><span class="vg">$1</span><span class="p">)</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">when</span> <span class="s2">&quot;R&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:right</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">when</span> <span class="s2">&quot;L&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:left</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">when</span> <span class="s2">&quot;E&quot;</span> <span class="k">then</span> <span class="o">[</span><span class="ss">:empty</span><span class="o">]</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now we can parse each instruction line by converting tokens with <code>parse_token</code>
+and converting the operations with <code>parse_operations</code> (which, of course, uses
+<code>parse_token</code> itself to lex the tokens it scans):</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_instruction()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@line = line</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">def</span> <span class="nf">parse_instruction</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;state, symbol, operations, end_state = @line.split(&quot;,&quot;).map{|e| e.strip}</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">state      = parse_token(state)</span>
+</span><span class='line'><span class="sr">symbol     = parse_token(symbol)</span>
+</span><span class='line'><span class="sr">operations = parse_operations(operations)</span>
+</span><span class='line'><span class="sr">end_state  = parse_token(end_state)</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">[state, symbol, operations, end_state]</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Using A Struct For Instructions</h2>
+
+<p>We can add a bit of semantic value to the tuples we use to represent machine
+instructions by wrapping them in a struct. In this way, the struct is
+functioning like an intermediate data type. The struct will also make it easier
+to unpack specific values out of the tuple. Structs also have the useful
+property of duck typing as arrays (through the use of <code>to_ary</code>). You can even
+splat them, which will come in handy later.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing::Machine::Instruction  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:state</span><span class="p">,</span> <span class="ss">:symbol</span><span class="p">,</span> <span class="ss">:operations</span><span class="p">,</span> <span class="ss">:end_state</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;class Turing::Parser::Line</span>
+</span><span class='line'><span class="sr">  def parse_instruction&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span><span class='line'><span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+</span><span class='line'><span class="n">operations</span> <span class="o">=</span> <span class="n">parse_operations</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
+</span><span class='line'><span class="n">end_state</span>  <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span>
+</span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>Parsing The Machine Specification</h2>
+
+<p>Now that we can parse in individual line, parsing the entire specification is
+just a matter of mapping lines to their parsed version:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_specification()  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">machine_spec</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@machine_spec = machine_spec</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">def</span> <span class="nf">parse_specification</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@machine_spec.split(&quot;\n&quot;).map { |line| Line.new(line).parse_instruction }</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>That's (Not) All, Folks</h2>
+
+<p>In upcoming parts, we'll use these instructions to form the basis of our Turing
+machine's configuration system; we'll implement the machine's
+tape and tape head, which will allow us to step through its execution; and we'll add a
+simple renderer that will print out the machine's operations so we can follow along.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Story Driven Development With&nbsp;Rails]]></title>
+    <link href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html"/>
+    <updated>2008-09-12T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails</id>
+    <content type="html"><![CDATA[<p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+we're going to take the first story and walk through a behavior driven
+development process to implement it in a simple Rails application.</p>
+
+<p>We will focus on making small, iterative changes and following a strict
+test-first philosophy where we write granular unit tests and implement them
+with just enough code to make them pass.</p>
+
+<!--more-->
+
+
+<p>Let's review our first story:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Acceptance:&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;ul>
+</span><span class='line'>&lt;li>All projects shown in list&lt;/li>
+</span><span class='line'>&lt;li>List is paginated&lt;/li>
+</span><span class='line'>&lt;li>List is sorted by age&lt;/li>
+</span><span class='line'>&lt;/ul>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>At this point, let's assume that this story is on top of our current iteration.
+First, we'll need to review the story for any missing information and
+communicate with the client to clear up any questions. Keep in mind that a
+story is just a way to capture a conversation about a feature. It is not set in
+stone. After talking to the client, we find that we will need to display a
+project's author name and title and that the title will need to link to that
+project's page. Let's update the story appropriately.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Acceptance:&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;ul>
+</span><span class='line'>&lt;li>All projects shown in list&lt;/li>
+</span><span class='line'>&lt;li>Show title for each project&lt;/li>
+</span><span class='line'>&lt;li>Show author name for each project&lt;/li>
+</span><span class='line'>&lt;li>Project title links to the project's page&lt;/li>
+</span><span class='line'>&lt;li>List is paginated&lt;/li>
+</span><span class='line'>&lt;li>List is sorted by project age&lt;/li>
+</span><span class='line'>&lt;/ul>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now that the story is complete, deliverable and acceptable, we can begin work
+on the new feature. A implementation plan should be forming in your head. Now
+is the time to divide the work into testable units. In our case we already have
+a Project model with the requisite fields (let's say) so our work will focus on
+the controller and view.</p>
+
+<h2>Test All The F---ing Time</h2>
+
+<p>Client sign-off on well written acceptance tests means that the specifications
+you write and the feature that is implemented as a result will be more closely
+in line with the client's expectations. This minimizes the kind of impedance
+mismatch between expectation and execution that so often plagues a project with
+poor client communication and a disorganized process.</p>
+
+<p>Now it's time to take our acceptance tests and use them to drive our iterative,
+test-driven development process. Let's take it from the top.</p>
+
+<h3>All Projects Shown in List</h3>
+
+<p>Let's start with the controller. A list of projects needs an index action.
+Starting at the top, we will need to load all of the projects. Let's write a
+test for this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;it &quot;loads all the projects&quot; do</span>
+</span><span class='line'><span class="sr">  projects = [mock_model(Project)]</span>
+</span><span class='line'><span class="sr">  Project.stub!(:all).and_return(projects)</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">  get &#39;index&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">  assigns(:projects).should == projects</span>
+</span><span class='line'><span class="sr">end</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
+eliminating the database from our test but is potentially more brittle since we
+cannot be sure that this interface point to our Project model will not need to
+change in the future.</p>
+
+<p>On a side note, I tend to view controller tests as integration-level tests
+rather than unit tests. As such, I usually do write tests that touch the
+database since these are often less brittle. If you write tests that touch the
+database, ActiveRecord factories such as <a href="http://giantrobots.thoughtbot.com/2008/6/6/waiting-for-a-factory-girl">Factory Girl</a>
+or <a href="http://b.logi.cx/2007/11/26/object-daddy">object daddy</a> are useful for
+populating the database with valid records in known states.</p>
+
+<p>Now we can write the implementation:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="no">ApplicationController</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">index</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@projects = Project.all</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Then we have to display a list of projects. We'll write a view test to cover this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@project = mock_model(Project)</span>
+</span><span class='line'><span class="sr">@projects = [@project]</span>
+</span><span class='line'><span class="sr">assigns[:projects] = @projects</span>
+</span><span class='line'><span class="sr">render &#39;projects/in</span><span class="n">dex</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">&lt;/code&gt;&lt;/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;p&gt;  end&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;p&gt;  it &quot;should include a list of projects&quot; do&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;</span><span class="n">li</span><span class="o">.</span><span class="n">project</span><span class="err">&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="vi">@projects</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>And the implementation:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
+testing only for semantically appropriate tags, classes and ids whenever
+possible. Using semantically rich markup in your views will make it much easier
+to write robust view tests -- and is also a great practice for its own sake.
+{:.note}</p>
+
+<h3>Show Title for Each Project</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;li.project .title&#39;, @project.title)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h3>Show Author Name for Each Project</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;li.project .author_name&#39;, @project.author_name)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
+There's a good chance that this name will be taken from an associated User or
+Author model in any non-trivial Rails application. From an object oriented
+standpoint, however, having the author name hang directly from the Project
+model improves encapsulation.</p>
+
+<p>The benefits of this were already seen in the test, where we were able to stub
+<code>author_name</code> directly on the Project mock. Without the accessor, we would be
+forced to stub <code>#author</code> on the Project mock to return an Author mock that then
+stubs <code>#name</code> just so that we could properly test the method chain
+<code>project.author.name</code> that is used in the view. Violating the <a href="http://en.wikipedia.org/wiki/Law_of_Demeter">Law of Demeter</a>
+makes testing harder.</p>
+
+<h3>Project Title Links to the Project's Page</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag( &#39;li.project .title a[href=?]&#39;, project_path(@project),   </span>
+</span><span class='line'><span class="sr">  :text =&amp;gt; @project.title)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= link_to project.title, project <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The story is now about half complete. I'll leave pagination and default sort
+order as an exercise for the user. In fact, these could also have been broken
+out into a secondary story or stories given that what we have done so far is an
+incremental unit of work.</p>
+
+<p>I hope this rather contrived example shows how stories with well written
+acceptance tests inform a test- or behavior- driven development process and
+help bridge the gap between what the client expects and what the developement
+team delivers.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Ruby Patterns: Query Method]]></title>
+    <link href="http://reinh.github.com/blog/2008/07/17/ruby-patterns-query-method.html"/>
+    <updated>2008-07-17T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/07/17/ruby-patterns-query-method</id>
+    <content type="html"><![CDATA[<p>Today, we will learn how the Query Method pattern handles a set of tensions we often
+face while designed object oriented systems.</p>
+
+<!--more-->
+
+
+<p>What are patterns? Patterns are learnable and reusable answers to common
+programming questions. They are decisions made in response to a number of
+different concerns (or tensions). A well written pattern resolves each of the
+tensions harmoniously and provides a set of repeatable steps for its
+reapplication.</p>
+
+<p>Let's look at a situation where various tensions pull us towards the need to
+make a harmonious design decision and attempt to derive a pattern for future
+use. As we do so, we will try to keep in mind the tensions at play and come up
+with steps that can be used to reapply the pattern in the future.</p>
+
+<p>The Query Method pattern answers a particularly common question, "How can I ask
+an object for information about itself?" The tensions at play include a desire
+to maintain proper encapsulation, a desire to keep code DRY(Don't Repeat
+Yourself) and a desire to maintain or improve the readability of the resulting
+solution.</p>
+
+<p>If you don't really care about the discovery process and you want to skip
+straight to the pattern itself, it's <a href="#bottom">at the bottom</a>.</p>
+
+<h2>Discovering A Pattern</h2>
+
+<p>In a recent blog post on
+<a href="http://www.stephenchu.com/2008/06/learning-encapsulation-should-come.html">the value of learning encapsulation before learning rails</a>,
+Stephen Chu gives an excellent example of a fragment of ruby code that could be
+improved by application of the Query Method pattern. I'll use a slightly
+different example:</p>
+
+<p>``` ruby</p>
+
+<pre><code>puts "#{@post.title} is recent." if @post.published_at &lt; 2.days.ago
+</code></pre>
+
+<p>```</p>
+
+<p>Let's look at this code in light of some of the different tensions:</p>
+
+<h3>Encapsulation</h3>
+
+<p>In his post, Stephen points out that this code breaks encapsulation by yanking
+state information out of the object for comparison. The comparison is being
+made on post information but it is being made outside the context of the post.
+We can change the code a bit to make this more clear:</p>
+
+<p>``` ruby</p>
+
+<pre><code>class Blog
+  def recent_post_list
+    @posts.each do |post|
+      puts "#{post.title} is recent." if post.published_at &lt; 2.days.ago
+    end
+  end
+end
+</code></pre>
+
+<p>```</p>
+
+<p>The blog that is creating this recent post list shouldn't and needn't know how
+to determine if a post is recent. This is the post's responsibility. The blog
+should simply ask the post if it is recent and let the post make the
+calculation. This desire for encapsulation is the first tension.</p>
+
+<h3>Don't Repeat Yourself</h3>
+
+<p>This code seems simple enough. It does one thing and appears to do it
+efficiently. There is no violation of DRY yet, but it isn't to difficult to
+imagine other situations where we might need to know if a post is recent.</p>
+
+<p>Let's say we are generating an HTML page and we want to apply a special class
+to recent posts. We will need to duplicate this logic inside that method as
+well. What if we later decide that we want posts in the last three days instead
+of two? Now we have to find each instance of this code fragment so that we can
+change it appropriately.</p>
+
+<p>What a pain! Clearly this code is not DRY and its maintainability is
+compromised as a result. This is the second tension.</p>
+
+<h3>Readability</h3>
+
+<p>This code looks pretty readable. <code>published_at</code> and <code>2.days.ago</code> reveal their
+intention quite clearly. If any improvement is to be made, you may think, it
+will be incremental and relatively small. Nevertheless, improved readability
+means improved maintainability, so it is always worth consideration. This is
+the third tension.</p>
+
+<h2>Composing A Pattern</h2>
+
+<p>This list of tensions isn't exhaustive but it should be sufficient for us to
+begin considering a solution. How can we improve this code in a way that most
+effectively addresses all of them?</p>
+
+<p>This is a case where the tensions are not in direct opposition. It should be
+pretty easy to come up with a solution. Let's try to formulate such a pattern,
+including the steps necessary to reapply it again in the future.</p>
+
+<h3>Encapsulation and DRY</h3>
+
+<p>First, we'll start by encapsulating the comparison inside the post object:</p>
+
+<p>``` ruby</p>
+
+<pre><code>class Post
+  def is_published_at_less_than_two_days_ago?
+    published_at &lt; 2.days.ago
+  end
+end
+
+puts "#{@post.title} is recent." if @post.is_published_at_less_than_two_days_ago?
+</code></pre>
+
+<p>```</p>
+
+<p>This resolves the encapsulation tension. By factoring the behavior to a single
+location it also resolves the DRY tension. It doesn't do much for our
+readability tension, though. Let's see what we can do about that.</p>
+
+<h3>Readability</h3>
+
+<p>Patterns can often be improved by the inclusion of smaller, more granular
+patterns. In this case, the readability can be improved by providing the method
+with an Intention Revealing Selector. An intention revealing selector is, as
+the name suggests, one that informs to the user of the intention of the method
+rather than its implementation.</p>
+
+<p>Our current selector - and the code it is based on - informs the user of the
+method's implementation. It answers the "how" question. An Intention Revealing
+Selector answers the more useful "why" question, as in: why does this method
+exist, why would I want to use it?</p>
+
+<p>So: why does this method exist? It exists so that the post can be asked if it
+is recent or not. An intention revealing name for this selector would use the
+word "recent" to answer the "why" question.</p>
+
+<p>The Ruby idiom for a method that is intended to return a boolean value is to
+end it with a "?". Let's apply the Intention Revealing Selector pattern by
+giving the method an intention revealing name and ending it with a
+"?".</p>
+
+<p>``` ruby</p>
+
+<pre><code>class Post
+  def recent?
+    published_at &lt; 2.days.ago
+  end
+end
+
+puts "#{post.title} is recent." if post.recent?
+</code></pre>
+
+<p>```</p>
+
+<p>I think you'll agree that this new method resolves all of the tensions
+harmoniously. The behavior is properly encapsulated, it is DRY because it is
+defined Once And Only Once, and it is significantly more readable than the
+original because it reveals its intention rather than its implementation.</p>
+
+<p>Thus, we can formulate the Query Method Pattern as such:</p>
+
+<h2>Formulating The Query Method Pattern</h2>
+
+<p>When you want to query an object about itself in a way that is properly
+encapsulated, DRY and more readable, follow these steps:</p>
+
+<ol>
+<li>Write a method that performs the query.</li>
+<li>Put it inside the object that holds the information being queried.</li>
+<li>Give it an Intention Revealing Selector.</li>
+</ol>
+
+
+<p>The next time you're faced with this design question, you can apply the Query
+Method pattern.</p>
+
+<p>Hopefully this process will help you begin to identify patterns of your own. If
+you're interested in learning more about patterns (and you should be), I highly
+recommend
+<a href="http://www.amazon.com/Smalltalk-Best-Practice-Patterns-Kent/dp/013476904X">Smalltalk Best Practice Patterns</a>
+by Kent Beck (non-affiliate link). It's worth learning Smalltalk just to be
+able to understand the code examples.</p>
+]]></content>
+  </entry>
+  
+</feed>

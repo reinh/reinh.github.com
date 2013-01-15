@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Agile | reinh.com]]></title>
+  <link href="http://reinh.github.com/blog/categories/agile/atom.xml" rel="self"/>
+  <link href="http://reinh.github.com/"/>
+  <updated>2013-01-15T15:14:10-08:00</updated>
+  <id>http://reinh.github.com/</id>
+  <author>
+    <name><![CDATA[Rein Henrichs]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[A Git Workflow for Agile Teams]]></title>
+    <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
+    <updated>2009-03-02T00:00:00-08:00</updated>
+    <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
+    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+bugs while keeping a clean and sane history.</p>
+
+<p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
+Agile mentoring and training. Git gives us the flexibility to design a version
+control workflow that meets the needs of either a fully Agile team or a team
+that is transitioning towards an Agile process.</p>
+
+<!--more-->
+
+
+<p>There are many usable git workflows. Indeed, git is really "a tool for
+designing VCS workflows" rather than a Version Control System itself. Or, as
+Linus would say, git is just a stupid content tracker.</p>
+
+<p>This is by no means a normative document or my attempt to define The One True
+Workflow. I have found this workflow to be productive and relatively painless,
+especially for teams that are still learning and transitioning towards a more
+Agile process. I invite you to comment below and describe the git workflow that
+works best for you.</p>
+
+<h2>Credits</h2>
+
+<p>Anyone interested in using git in an Agile environment should read Josh
+Susser's <cite>Agile Git and the Story Branch Pattern</cite>. This workflow
+is based largely on his.</p>
+
+<p>The process of squashing commits into more atomic and incremental units has
+been described by Justin Reagor in <cite>A "Squash" WorkFlow in Git</cite>.
+Justin's post also references a <code>git rebase -i</code> walkthrough by MadCoder
+that provides a good explanation the interactive rebase process.</p>
+
+<p>Thanks also to <a href="http://www.rickbradley.com/">Rick Bradley</a> of <a href="http://www.ogtastic.com/">OG Consulting</a>
+and <a href="http://blog.hasmanythrough.com/">Josh Susser</a> of <a href="http://pivotallabs.com">Pivotal Labs</a>
+for many fruitful and often hilarious discussions about git, Agile and ponies.</p>
+
+<h2>Feature Development</h2>
+
+<p>Our git feature development workflow consists of these steps:</p>
+
+<ol>
+<li>Pull to update your local master</li>
+<li>Check out a feature branch</li>
+<li>Do work in your feature branch, committing early and often</li>
+<li>Rebase frequently to incorporate upstream changes</li>
+<li>Interactive rebase (squash) your commits</li>
+<li>Merge your changes with master</li>
+<li>Push your changes to the upstream</li>
+</ol>
+
+
+<p>First, and while in your master branch (<code>git checkout master</code>), pull in the
+most recent changes:</p>
+
+<pre><code>git pull origin master
+</code></pre>
+
+<p>This should never create a merge commit because we are never working directly
+in master.</p>
+
+<p><em>NB:</em> Whenever you perform a pull, merge or rebase, make sure that you
+run tests directly afterwards. Git may not show any conflicts but that doesn't
+mean that two changes are compatible. Also run tests before you commit (of
+course).</p>
+
+<p>We begin with the topmost available story in <a href="http://pivotaltracker.com">Pivotal Tracker</a>.
+Let's say that it's <em>#3275: User Can Add A
+Comment To a Post</em>. First, check out a feature branch named with the story id
+and a short, descriptive title:</p>
+
+<pre><code>git checkout -b 3275-add-commenting
+</code></pre>
+
+<p>The id allows us to easily track this branch back to the story that spawned it.
+The title is there to give us humans a little hint as to what's in it. Do some
+work on this branch, committing early and often (for instance, whenever your
+tests pass). Rebase against the upstream frequently to prevent your branch from
+diverging significantly:</p>
+
+<pre><code>git fetch origin master
+git rebase origin/master
+</code></pre>
+
+<p><em>NB:</em> This is often done by checking master out and pulling, but this method
+requires extra steps:</p>
+
+<pre><code>git checkout master
+git pull
+git checkout 3275-add-commenting
+git rebase master
+</code></pre>
+
+<p>Once work on the feature is complete, you will have a branch with a lot of
+small commits like "adding a model and a migration", "adding a controller and
+some views", "oh crap - adding tests" and so on. This is useful while
+developing but larger, incremental commits are more easier to maintain. We will
+use an interactive rebase to squash them together. Also, squashing
+these commits together will allow us to pretend that we wrote the tests
+first&hellip;</p>
+
+<p>We want the rebase to affect only the commits we've made to this branch, not
+the commits that exist on the upstream. To ensure that we only deal with the
+"local" commits, use:</p>
+
+<pre><code>git rebase -i origin/master
+</code></pre>
+
+<p>Git will display an editor window with a list of the commits to be modified,
+something like:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+pick 9f5c362 Adding Comment controller, helper, spec
+pick dcd4813 Adding Comment relationship with Post
+pick 977a754 Comment belongs to a User
+pick 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Now we tell git what we to do. Change these lines to:</p>
+
+<pre><code>pick 3dcd585 Adding Comment model, migrations, spec
+squash 9f5c362 Adding Comment controller, helper, spec
+squash dcd4813 Adding Comment relationship with Post
+squash 977a754 Comment belongs to a User
+squash 9ea48e3 Comment form on Post show page
+</code></pre>
+
+<p>Save and close the file. This will squash these commits together into one
+commit and present us with a new editor window where we can give the new commit
+a message. We'll use the story id and title for the subject and list the
+original commit messages in the body:</p>
+
+<pre><code>[#3275] User Can Add A Comment To a Post
+
+* Adding Comment model, migrations, spec
+* Adding Comment controller, helper, spec
+* Adding Comment relationship with Post
+* Comment belongs to a User
+* Comment form on Post show page
+</code></pre>
+
+<p>This also follows Tim Pope's <a href="http://www.tpope.net/node/106">git commit message best
+practices</a>. Now, save and close your editor.
+This commit is now ready to be merged back into master. First rebase against
+any recent changes in the upstream. Then merge your changes back into master:</p>
+
+<pre><code>git checkout master
+git merge 3275-add-commenting
+</code></pre>
+
+<p>And finally, push your changes to the upstream:</p>
+
+<pre><code>git push origin master
+</code></pre>
+
+<h2>Bug Fixes</h2>
+
+<p>Bugfixes will use the same workflow as feature work. Name your bugfix branch
+after the bug id and give it a descriptive name. Prefix the branch name with
+"bug" to help you keep track of them, for instance:
+<code>bug-3845-empty-comments-allowed</code>.</p>
+
+<p>Do work in your bugfix branch, committing early and often. Rebase frequently
+against the upstream and again when you are finished. Then, use an interactive
+rebase to squash <em>all</em> the commits together. Use the bug id and title for the
+subject of the new commit. Include "BUG" or "BUGFIX" to make these commits
+easier to identify. For instance:</p>
+
+<pre><code>[#3278] BUGFIX: Empty Comments Should Not Be Allowed
+</code></pre>
+
+<p><em>NB:</em> With a bugfix, squash the commits down into one and exactly one commit
+that completely represents that bugfix. Half of a bugfix is useless.</p>
+
+<h2>QA Branch Management</h2>
+
+<p>In a truly Agile process, as Josh Susser explained to me, you simply deploy
+directly from your latest "green" build. While this may seem impossible, there
+are real world examples of the viability of Continuous Deployment.</p>
+
+<p>For most of the teams we train, this sort of extreme agility is a goal rather
+than a way of life. They are transitioning towards a fully Agile process from a
+more rigorous one and often have a significant investment in Quality Assurance.
+For these teams, I recommend a compromise solution: Use a remote QA branch that
+is fast-forward merged from the latest "green" (all CI tests pass) master build
+for QA deployments.</p>
+
+<p>If you don't already have a QA branch, create one from the current master
+(assuming it's green) and then push it to your git host:</p>
+
+<pre><code>git checkout -b qa
+git push origin qa:refs/heads/qa
+</code></pre>
+
+<p>To update an existing QA branch with the latest changes from master, do this:</p>
+
+<pre><code>git checkout qa
+git merge master
+git push origin qa
+</code></pre>
+
+<p>Ensure that the master branch is green when you merge. Also ensure that this
+merge is always a Fast Forward merge. If it is not, it means that commits have
+been made in the QA branch that are not in the master branch. QA should be
+merged into from master only, never worked on directly.</p>
+
+<h2>Production Tagging</h2>
+
+<p>While an Agile team will be deploying continuously, most teams will require a
+more rigorous vetting process before a build is deployed to production. Tags
+provide a simple way for QA to vet a particular build.</p>
+
+<p>Once QA has signed off on a build as ready for production, a tag should be made
+and deployed. In git, a tag can be created with <code>git tag &lt;name&gt;</code>. It is
+important that tag naming is consistent and it is useful if they sort in a
+meaningful way (latest last, for instance). Two good options are a timestamp or
+product version. Use whichever is more meaningful to your team.</p>
+
+<p>The process of creating a timestamped production tag can be automated with a
+simple script or a git alias like this one:</p>
+
+<pre><code>git config alias.datetag '!git tag `date "+%Y%m%d%H%M"`'
+</code></pre>
+
+<p>With this alias, <code>git datetag</code> will create a new tag from <code>HEAD</code> with the
+current timestamp. You will want to be in the QA branch. If the QA branch has
+moved beyond the last commit vetted by your QA team, be sure to checkout that
+commit first.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Story Driven Development With&nbsp;Rails]]></title>
+    <link href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html"/>
+    <updated>2008-09-12T00:00:00-07:00</updated>
+    <id>http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails</id>
+    <content type="html"><![CDATA[<p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+we're going to take the first story and walk through a behavior driven
+development process to implement it in a simple Rails application.</p>
+
+<p>We will focus on making small, iterative changes and following a strict
+test-first philosophy where we write granular unit tests and implement them
+with just enough code to make them pass.</p>
+
+<!--more-->
+
+
+<p>Let's review our first story:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Acceptance:&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;ul>
+</span><span class='line'>&lt;li>All projects shown in list&lt;/li>
+</span><span class='line'>&lt;li>List is paginated&lt;/li>
+</span><span class='line'>&lt;li>List is sorted by age&lt;/li>
+</span><span class='line'>&lt;/ul>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>At this point, let's assume that this story is on top of our current iteration.
+First, we'll need to review the story for any missing information and
+communicate with the client to clear up any questions. Keep in mind that a
+story is just a way to capture a conversation about a feature. It is not set in
+stone. After talking to the client, we find that we will need to display a
+project's author name and title and that the title will need to link to that
+project's page. Let's update the story appropriately.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+</span><span class='line'>So that I can find a project that interests me&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Acceptance:&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;ul>
+</span><span class='line'>&lt;li>All projects shown in list&lt;/li>
+</span><span class='line'>&lt;li>Show title for each project&lt;/li>
+</span><span class='line'>&lt;li>Show author name for each project&lt;/li>
+</span><span class='line'>&lt;li>Project title links to the project's page&lt;/li>
+</span><span class='line'>&lt;li>List is paginated&lt;/li>
+</span><span class='line'>&lt;li>List is sorted by project age&lt;/li>
+</span><span class='line'>&lt;/ul>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Now that the story is complete, deliverable and acceptable, we can begin work
+on the new feature. A implementation plan should be forming in your head. Now
+is the time to divide the work into testable units. In our case we already have
+a Project model with the requisite fields (let's say) so our work will focus on
+the controller and view.</p>
+
+<h2>Test All The F---ing Time</h2>
+
+<p>Client sign-off on well written acceptance tests means that the specifications
+you write and the feature that is implemented as a result will be more closely
+in line with the client's expectations. This minimizes the kind of impedance
+mismatch between expectation and execution that so often plagues a project with
+poor client communication and a disorganized process.</p>
+
+<p>Now it's time to take our acceptance tests and use them to drive our iterative,
+test-driven development process. Let's take it from the top.</p>
+
+<h3>All Projects Shown in List</h3>
+
+<p>Let's start with the controller. A list of projects needs an index action.
+Starting at the top, we will need to load all of the projects. Let's write a
+test for this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;it &quot;loads all the projects&quot; do</span>
+</span><span class='line'><span class="sr">  projects = [mock_model(Project)]</span>
+</span><span class='line'><span class="sr">  Project.stub!(:all).and_return(projects)</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">  get &#39;index&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">  assigns(:projects).should == projects</span>
+</span><span class='line'><span class="sr">end</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
+eliminating the database from our test but is potentially more brittle since we
+cannot be sure that this interface point to our Project model will not need to
+change in the future.</p>
+
+<p>On a side note, I tend to view controller tests as integration-level tests
+rather than unit tests. As such, I usually do write tests that touch the
+database since these are often less brittle. If you write tests that touch the
+database, ActiveRecord factories such as <a href="http://giantrobots.thoughtbot.com/2008/6/6/waiting-for-a-factory-girl">Factory Girl</a>
+or <a href="http://b.logi.cx/2007/11/26/object-daddy">object daddy</a> are useful for
+populating the database with valid records in known states.</p>
+
+<p>Now we can write the implementation:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="no">ApplicationController</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">index</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@projects = Project.all</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Then we have to display a list of projects. We'll write a view test to cover this:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@project = mock_model(Project)</span>
+</span><span class='line'><span class="sr">@projects = [@project]</span>
+</span><span class='line'><span class="sr">assigns[:projects] = @projects</span>
+</span><span class='line'><span class="sr">render &#39;projects/in</span><span class="n">dex</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">&lt;/code&gt;&lt;/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;p&gt;  end&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;p&gt;  it &quot;should include a list of projects&quot; do&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;</span><span class="n">li</span><span class="o">.</span><span class="n">project</span><span class="err">&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="vi">@projects</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>And the implementation:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
+testing only for semantically appropriate tags, classes and ids whenever
+possible. Using semantically rich markup in your views will make it much easier
+to write robust view tests -- and is also a great practice for its own sake.
+{:.note}</p>
+
+<h3>Show Title for Each Project</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;li.project .title&#39;, @project.title)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h3>Show Author Name for Each Project</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag(&#39;li.project .author_name&#39;, @project.author_name)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
+There's a good chance that this name will be taken from an associated User or
+Author model in any non-trivial Rails application. From an object oriented
+standpoint, however, having the author name hang directly from the Project
+model improves encapsulation.</p>
+
+<p>The benefits of this were already seen in the test, where we were able to stub
+<code>author_name</code> directly on the Project mock. Without the accessor, we would be
+forced to stub <code>#author</code> on the Project mock to return an Author mock that then
+stubs <code>#name</code> just so that we could properly test the method chain
+<code>project.author.name</code> that is used in the view. Violating the <a href="http://en.wikipedia.org/wiki/Law_of_Demeter">Law of Demeter</a>
+makes testing harder.</p>
+
+<h3>Project Title Links to the Project's Page</h3>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;response.should have_tag( &#39;li.project .title a[href=?]&#39;, project_path(@project),   </span>
+</span><span class='line'><span class="sr">  :text =&amp;gt; @project.title)</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;p&gt;  end</span>
+</span><span class='line'><span class="sr">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;ul&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= link_to project.title, project <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">&quot;author_name&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.author_name <span class="err">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
+</span><span class='line'><span class="nt">&lt;/ul&gt;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>The story is now about half complete. I'll leave pagination and default sort
+order as an exercise for the user. In fact, these could also have been broken
+out into a secondary story or stories given that what we have done so far is an
+incremental unit of work.</p>
+
+<p>I hope this rather contrived example shows how stories with well written
+acceptance tests inform a test- or behavior- driven development process and
+help bridge the gap between what the client expects and what the developement
+team delivers.</p>
+]]></content>
+  </entry>
+  
+</feed>
