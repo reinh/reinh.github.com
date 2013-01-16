@@ -4,7 +4,7 @@
   <title><![CDATA[reinh.com]]></title>
   <link href="http://reinh.github.com/atom.xml" rel="self"/>
   <link href="http://reinh.github.com/"/>
-  <updated>2013-01-15T15:14:10-08:00</updated>
+  <updated>2013-01-15T18:41:58-08:00</updated>
   <id>http://reinh.github.com/</id>
   <author>
     <name><![CDATA[Rein Henrichs]]></name>
@@ -18,12 +18,13 @@
     <link href="http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html"/>
     <updated>2011-09-03T17:41:00-07:00</updated>
     <id>http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1</id>
-    <content type="html"><![CDATA[<p>To better understand Turing&#8217;s machine and its contributions to mathematics and
-computer science, we will build a simulator in Ruby. This simulator will take a
-description of the machine&#8217;s configuration, create a model of the machine, and
-run through its steps. We will be able to observe the action of the head and
-changes to the tape at each step. Hopefully this will serve to illuminate some
-aspects of Turing&#8217;s machine that might otherwise be less accessible.</p>
+    <content type="html"><![CDATA[<p><span class='caps'>To better understand</span> Turing&#8217;s machine and its contributions
+to mathematics and computer science, we will build a simulator in Ruby. This
+simulator will take a description of the machine&#8217;s configuration, create a
+model of the machine, and run through its steps. We will be able to observe the
+action of the head and changes to the tape at each step. Hopefully this will
+serve to illuminate some aspects of Turing&#8217;s machine that might otherwise be
+less accessible.</p>
 
 <!--more-->
 
@@ -31,7 +32,7 @@ aspects of Turing&#8217;s machine that might otherwise be less accessible.</p>
 <p>Although the Turing machine is often thought of as prefiguring later computer
 science innovations such as the state machine, its original purpose was quite
 different. Turing created his machine in an attempt to understand the limits of
-mechanical computation. That is to say, the limits of <em>computability</em>. The
+mechanical computation, i.e., the limits of <em>computability</em>. The
 paper that introduced the Turing machine, published in 1936, refers to
 &#8220;computable numbers&#8221; and their use in solving David Hilbert&#8217;s <em><a href="http://en.wikipedia.org/wiki/Entscheidungsproblem">Entscheidungsproblem</a></em>, or
 &#8220;decision problem&#8221;.</p>
@@ -116,14 +117,10 @@ machine, which computes the sequence <em>0 1 0 1 0 1&hellip;</em>. This machine&
 the Turing machine&#8217;s instructions. In this format, the instructions look like
 this:</p>
 
-<figure class='code'><figcaption><span>Turing&#8217;s First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>b, None, P0R, c
+<figure class='code'><figcaption><span>Turing&#8217;s First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><pre><code class=''><span class='line'>b, None, P0R, c
 </span><span class='line'>c, None, R,   e
 </span><span class='line'>e, None, P1R, f
-</span><span class='line'>f, None, R,   b</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>f, None, R,   b</span></code></pre></div></figure>
 
 
 <p>The m-configurations (instructions) in my machines will begin with <em>b</em>, just as Turing&#8217;s did. (I believe he used <em>b</em> for <em>begin</em>.)</p>
@@ -148,19 +145,13 @@ represented as <code>nil</code> and the integers <code>0</code> and <code>1</cod
 <p>Here is our Ruby representation of the above instruction list:</p>
 
 <figure class='code'><figcaption><span>Turing&#8217;s First Example (Ruby)  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="o">[</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:b</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">0</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:c</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:c</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:e</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:e</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">1</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:f</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:f</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:b</span> <span class="o">]</span>
 </span><span class='line'><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <h2>Parsing An Instruction</h2>
@@ -179,16 +170,7 @@ instruction lines. This in turn will need to parse (lex) individual tokens into 
 representation. We&#8217;ll start there:</p>
 
 <figure class='code'><figcaption><span>parse_token()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
 </span><span class='line'>    <span class="k">case</span> <span class="n">token</span>
 </span><span class='line'>    <span class="k">when</span> <span class="s2">&quot;None&quot;</span> <span class="k">then</span> <span class="kp">nil</span>
@@ -197,7 +179,7 @@ representation. We&#8217;ll start there:</p>
 </span><span class='line'>    <span class="k">else</span> <span class="n">token</span><span class="o">.</span><span class="n">intern</span>
 </span><span class='line'>    <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This will take a token like &#8220;None&#8221; and return its Ruby representation, in this
@@ -209,19 +191,7 @@ will lex the operation string and turn it into a list of operation tuples (as
 described above).</p>
 
 <figure class='code'><figcaption><span>parse_operations()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_operations</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">actions</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="sr">/P.|R|L|E/</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">action</span><span class="o">|</span>
 </span><span class='line'>      <span class="k">case</span> <span class="n">action</span>
@@ -233,7 +203,7 @@ described above).</p>
 </span><span class='line'>    <span class="k">end</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Now we can parse each instruction line by converting tokens with <code>parse_token</code>
@@ -241,29 +211,14 @@ and converting the operations with <code>parse_operations</code> (which, of cour
 <code>parse_token</code> itself to lex the tokens it scans):</p>
 
 <figure class='code'><figcaption><span>parse_instruction()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 </span><span class='line'>    <span class="vi">@line</span> <span class="o">=</span> <span class="n">line</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_instruction</span>
-</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'>    <span class="n">tokens</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:strip</span>
+</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="n">tokens</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
@@ -273,7 +228,7 @@ and converting the operations with <code>parse_operations</code> (which, of cour
 </span><span class='line'>    <span class="o">[</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span><span class="o">]</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <h2>Using A Struct For Instructions</h2>
@@ -286,33 +241,27 @@ property of duck typing as arrays (through the use of <code>to_ary</code>). You 
 splat them, which will come in handy later.</p>
 
 <figure class='code'><figcaption><span>Turing::Machine::Instruction  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:state</span><span class="p">,</span> <span class="ss">:symbol</span><span class="p">,</span> <span class="ss">:operations</span><span class="p">,</span> <span class="ss">:end_state</span><span class="p">)</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span> <span class="ss">:state</span><span class="p">,</span>
+</span><span class='line'>                                          <span class="ss">:symbol</span><span class="p">,</span>
+</span><span class='line'>                                          <span class="ss">:operations</span><span class="p">,</span>
+</span><span class='line'>                                          <span class="ss">:end_state</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_instruction</span>
-</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'>    <span class="n">tokens</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="ss">:strip</span>
+</span><span class='line'>    <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="n">tokens</span>
 </span><span class='line'>
 </span><span class='line'>    <span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">operations</span> <span class="o">=</span> <span class="n">parse_operations</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">end_state</span>  <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
 </span><span class='line'>
-</span><span class='line'>    <span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span>
+</span><span class='line'>    <span class="ss">Machine</span><span class="p">:</span><span class="ss">:Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span>
+</span><span class='line'>                             <span class="n">symbol</span><span class="p">,</span>
+</span><span class='line'>                             <span class="n">operations</span><span class="p">,</span>
+</span><span class='line'>                             <span class="n">end_state</span>
 </span><span class='line'>  <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <h2>Parsing The Machine Specification</h2>
@@ -321,25 +270,18 @@ splat them, which will come in handy later.</p>
 just a matter of mapping lines to their parsed version:</p>
 
 <figure class='code'><figcaption><span>parse_specification()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">machine_spec</span><span class="p">)</span>
 </span><span class='line'>    <span class="vi">@machine_spec</span> <span class="o">=</span> <span class="n">machine_spec</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_specification</span>
-</span><span class='line'>    <span class="vi">@machine_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="no">Line</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">parse_instruction</span> <span class="p">}</span>
+</span><span class='line'>    <span class="vi">@machine_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
+</span><span class='line'>      <span class="no">Line</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">parse_instruction</span>
+</span><span class='line'>    <span class="k">end</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <h2>That&#8217;s (Not) All, Folks</h2>
@@ -356,12 +298,12 @@ simple renderer that will print out the machine&#8217;s operations so we can fol
     <link href="http://reinh.github.com/blog/2009/09/21/ch-ch-ch-changes.html"/>
     <updated>2009-09-21T00:00:00-07:00</updated>
     <id>http://reinh.github.com/blog/2009/09/21/ch-ch-ch-changes</id>
-    <content type="html"><![CDATA[<p>A couple months ago, I resigned my position at Hashrocket. This was not an easy
-decision for me. Working with the rocketeers has been a very fulfilling and
-edifying experience. The people at Hashrocket are passionate about what they do
-and extremely competent. I was given challenging and rewarding
-responsibilities. Hashrocket was a great job and I would recommend it to
-anyone. Why, then, did I chose to leave?</p>
+    <content type="html"><![CDATA[<p><span class='caps'>A couple months ago</span>, I resigned my position at Hashrocket.
+This was not an easy decision for me. Working with the rocketeers has been a
+very fulfilling and edifying experience. The people at Hashrocket are
+passionate about what they do and extremely competent. I was given challenging
+and rewarding responsibilities. Hashrocket was a great job and I would
+recommend it to anyone. Why, then, did I chose to leave?</p>
 
 <!--more-->
 
@@ -471,7 +413,7 @@ Expect more posts in the near future. I&#8217;ve got plenty to talk about.</p>
     <link href="http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html"/>
     <updated>2009-04-17T00:00:00-07:00</updated>
     <id>http://reinh.github.com/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane</id>
-    <content type="html"><![CDATA[<p>On OS X? Develop web applications with Ruby? Want drag-and-drop and
+    <content type="html"><![CDATA[<p><span class='caps'>On OS X?</span> Develop web applications with Ruby? Want drag-and-drop and
 point-and-click development server management? Then you need Passenger Pane.
 We&#8217;ll walk you through the installation process and show you how to get a
 simple Rack application up and running. Thanks to
@@ -608,7 +550,7 @@ directory, you would have to look at your apache error log, which is usually loc
     <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
     <updated>2009-03-02T00:00:00-08:00</updated>
     <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
-    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+    <content type="html"><![CDATA[<p><span class='caps'>An efficient workflow</span> for developers in Agile teams that handles features and
 bugs while keeping a clean and sane history.</p>
 
 <p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
@@ -843,7 +785,7 @@ commit first.</p>
     <link href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html"/>
     <updated>2008-09-12T00:00:00-07:00</updated>
     <id>http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails</id>
-    <content type="html"><![CDATA[<p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+    <content type="html"><![CDATA[<p><span class='caps'>As a follow up</span> on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
 we&#8217;re going to take the first story and walk through a behavior driven
 development process to implement it in a simple Rails application.</p>
 
@@ -857,17 +799,7 @@ with just enough code to make them pass.</p>
 <p>Let&#8217;s review our first story:</p>
 
 <figure class='code'><figcaption><span>Story #1 </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+<div class="highlight"><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
 </span><span class='line'>So that I can find a project that interests me
 </span><span class='line'>
 </span><span class='line'>Acceptance:
@@ -876,7 +808,7 @@ with just enough code to make them pass.</p>
 </span><span class='line'>* List is paginated
 </span><span class='line'>* List is sorted by age
 </span><span class='line'>
-</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>Cost: 1 Point</span></code></pre></div></figure>
 
 
 <p>At this point, let&#8217;s assume that this story is on top of our current iteration.
@@ -888,20 +820,7 @@ project&#8217;s author name and title and that the title will need to link to th
 project&#8217;s page. Let&#8217;s update the story appropriately.</p>
 
 <figure class='code'><figcaption><span>Story #1 </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+<div class="highlight"><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
 </span><span class='line'>So that I can find a project that interests me
 </span><span class='line'>
 </span><span class='line'>Acceptance:
@@ -913,7 +832,7 @@ project&#8217;s page. Let&#8217;s update the story appropriately.</p>
 </span><span class='line'>* List is paginated
 </span><span class='line'>* List is sorted by project age
 </span><span class='line'>
-</span><span class='line'>Cost: 1 Point</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>Cost: 1 Point</span></code></pre></div></figure>
 
 
 <p>Now that the story is complete, deliverable and acceptable, we can begin work
@@ -940,19 +859,7 @@ Starting at the top, we will need to load all of the projects. Let&#8217;s write
 test for this:</p>
 
 <figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">it</span> <span class="s2">&quot;loads all the projects&quot;</span> <span class="k">do</span>
 </span><span class='line'>      <span class="n">projects</span> <span class="o">=</span> <span class="o">[</span><span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span><span class="o">]</span>
@@ -964,7 +871,7 @@ test for this:</p>
 </span><span class='line'>    <span class="k">end</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
@@ -982,35 +889,18 @@ populating the database with valid records in known states.</p>
 <p>Now we can write the implementation:</p>
 
 <figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">index</span>
 </span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="no">Project</span><span class="o">.</span><span class="n">all</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Then we have to display a list of projects. We&#8217;ll write a view test to cover this:</p>
 
 <figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span>
 </span><span class='line'>    <span class="vi">@project</span> <span class="o">=</span> <span class="n">mock_model</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span>
 </span><span class='line'>    <span class="vi">@projects</span> <span class="o">=</span> <span class="o">[</span><span class="vi">@project</span><span class="o">]</span>
@@ -1022,23 +912,18 @@ populating the database with valid records in known states.</p>
 </span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project&#39;</span><span class="p">,</span> <span class="ss">:count</span> <span class="o">=&gt;</span> <span class="vi">@projects</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>And the implementation:</p>
 
 <figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;&lt;/li&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
 </span><span class='line'><span class="nt">&lt;/ul&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
@@ -1050,75 +935,46 @@ to write robust view tests &#8211; and is also a great practice for its own sake
 <h3>Show Title for Each Project</h3>
 
 <figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .title&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 
 
 <figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
 </span><span class='line'><span class="nt">&lt;/ul&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <h3>Show Author Name for Each Project</h3>
 
 <figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">response</span><span class="o">.</span><span class="n">should</span> <span class="n">have_tag</span><span class="p">(</span><span class="s1">&#39;li.project .author_name&#39;</span><span class="p">,</span> <span class="vi">@project</span><span class="o">.</span><span class="n">author_name</span><span class="p">)</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 
 
 <figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= project.title <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
@@ -1126,7 +982,7 @@ to write robust view tests &#8211; and is also a great practice for its own sake
 </span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
 </span><span class='line'><span class="nt">&lt;/ul&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
@@ -1145,15 +1001,7 @@ makes testing harder.</p>
 <h3>Project Title Links to the Project&#8217;s Page</h3>
 
 <figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span>
@@ -1161,21 +1009,13 @@ makes testing harder.</p>
 </span><span class='line'>      <span class="ss">:text</span> <span class="o">=&gt;</span> <span class="vi">@project</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 
 
 <figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
 </span><span class='line'>    <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">&quot;project&quot;</span><span class="nt">&gt;</span>
 </span><span class='line'>      <span class="nt">&lt;h2</span> <span class="na">class=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span><span class="err">&lt;</span>%%= link_to project.title, project <span class="err">%&gt;</span><span class="nt">&lt;/h2&gt;</span>
@@ -1183,7 +1023,7 @@ makes testing harder.</p>
 </span><span class='line'>    <span class="nt">&lt;/li&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% end <span class="err">-%&gt;</span>
 </span><span class='line'><span class="nt">&lt;/ul&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The story is now about half complete. I&#8217;ll leave pagination and default sort
@@ -1529,9 +1369,8 @@ Stephen Chu gives an excellent example of a fragment of ruby code that could be
 improved by application of the Query Method pattern. I&#8217;ll use a slightly
 different example:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="vi">@post</span><span class="o">.</span><span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="vi">@post</span><span class="o">.</span><span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
+</span></code></pre></div></figure>
 
 
 <p>Let&#8217;s look at this code in light of some of the different tensions:</p>
@@ -1543,21 +1382,14 @@ state information out of the object for comparison. The comparison is being
 made on post information but it is being made outside the context of the post.
 We can change the code a bit to make this more clear:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Blog</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Blog</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">recent_post_list</span>
 </span><span class='line'>    <span class="vi">@posts</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">post</span><span class="o">|</span>
 </span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
 </span><span class='line'>    <span class="k">end</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The blog that is creating this recent post list shouldn&#8217;t and needn&#8217;t know how
@@ -1602,21 +1434,14 @@ including the steps necessary to reapply it again in the future.</p>
 
 <p>First, we&#8217;ll start by encapsulating the comparison inside the post object:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">is_published_at_less_than_two_days_ago?</span>
 </span><span class='line'>    <span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="vi">@post</span><span class="o">.</span><span class="n">is_published_at_less_than_two_days_ago?</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This resolves the encapsulation tension. By factoring the behavior to a single
@@ -1645,21 +1470,14 @@ end it with a &#8220;?&#8221;. Let&#8217;s apply the Intention Revealing Selecto
 giving the method an intention revealing name and ending it with a
 &#8221;?&#8221;.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">recent?</span>
 </span><span class='line'>    <span class="n">published_at</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">.</span><span class="n">days</span><span class="o">.</span><span class="n">ago</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">post</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is recent.&quot;</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">recent?</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>I think you&#8217;ll agree that this new method resolves all of the tensions
@@ -1752,13 +1570,10 @@ vaguely similar in style to an association or named scope declaration. This is
 the usage example given in the
 <a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">README</a>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:fields</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="o">]</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This seems simple enough for such a simple case. We&#8217;ll see how it looks for
@@ -1770,17 +1585,12 @@ less trivial cases.</p>
 allow the individual index configuration options to be stated declaratively.
 The canonical example from UltraSphinx would look like this in ThinkingSphinx:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">indexes</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">body</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The first thing you may notice is that the same index configuration is three
@@ -1799,27 +1609,7 @@ example of such a real world Sphinx index declaration.</p>
 <p>Here&#8217;s an example of a more realistic UltraSphinx index configuration. This is
 the type of configuration you&#8217;re likely to use on any non-trivial project.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
 </span><span class='line'>
@@ -1839,7 +1629,7 @@ the type of configuration you&#8217;re likely to use on any non-trivial project.
 </span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
 </span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">}</span><span class="o">]</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This is about as pretty as it&#8217;s going to get - and that&#8217;s not very pretty.
@@ -1851,22 +1641,7 @@ increases.</p>
 
 <p>Let&#8217;s look at that same example translated to ThinkingSphinx.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
 </span><span class='line'>
@@ -1881,7 +1656,7 @@ increases.</p>
 </span><span class='line'>    <span class="n">where</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Not only did the number of lines decrease, the readability is far greater. I
@@ -1910,26 +1685,19 @@ will probably want to run the configuration task after you update the code.
 Here, for instance, is a Capistrano task to run your ThinkingSphinx
 configuration task:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;Generate the ThinkingSphinx configuration file&quot;</span>
 </span><span class='line'>  <span class="n">task</span> <span class="ss">:configure</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">run</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> &amp;&amp; rake thinking_sphinx:configure&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>You&#8217;ll want to have this task run after each deployment:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
+</span></code></pre></div></figure>
 
 
 <p>You can create other tasks relatively easily for reindexing and managing the
@@ -2081,19 +1849,13 @@ the RedCloth engine.</p>
 rest as an exercise for the gentle reader. The html we&#8217;re trying to create
 looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;img&quot;</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;figure-1-1&quot;</span><span class="o">&gt;</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;img&quot;</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;figure-1-1&quot;</span><span class="o">&gt;</span>
 </span><span class='line'>  <span class="o">&lt;</span><span class="n">a</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;/images/image.jpb&quot;</span><span class="o">&gt;</span>
 </span><span class='line'>    <span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;/images/thumbs/image.jpg&quot;</span> <span class="n">alt</span><span class="o">=</span><span class="s2">&quot;Figure 1.1&quot;</span> <span class="sr">/&gt;</span>
 </span><span class='line'><span class="sr">  &lt;/</span><span class="n">a</span><span class="o">&gt;</span>
 </span><span class='line'>  <span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="no">Figure</span> <span class="mi">1</span><span class="o">.</span><span class="mi">1</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'><span class="sr">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The tag we want to use to create it looks like this:</p>
@@ -2104,25 +1866,7 @@ looks like this:</p>
 <p>That&#8217;s quite a bit shorter and more elegant. Jumping right in to the good
 stuff, the method definition for our new tag looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">textile_fig</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">atts</span><span class="p">,</span> <span class="n">cite</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">textile_fig</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">atts</span><span class="p">,</span> <span class="n">cite</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
 </span><span class='line'>  <span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
 </span><span class='line'>  <span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
 </span><span class='line'>    <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
@@ -2140,32 +1884,25 @@ stuff, the method definition for our new tag looks like this:</p>
 </span><span class='line'><span class="sh">  &lt;/div&gt;</span>
 </span><span class='line'><span class="no">  TAG</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Let&#8217;s break that down.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
 </span><span class='line'><span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
 </span><span class='line'>  <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This adds any classes in atts (in the form of <code>class="foo"</code>) to the base class,
 img.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
 </span><span class='line'><span class="n">figure_name</span> <span class="o">=</span> <span class="s2">&quot;Figure </span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span class='line'><span class="n">figure_id</span> <span class="o">=</span> <span class="s2">&quot;figure-</span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">tr</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This breaks <code>fig 1.1 | image.jpg</code> down into two parts by splitting on the <code>|</code>
@@ -2193,11 +1930,9 @@ commit. This can be done with a simple git hook. Preventing your developers
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
 </span><span class='line'>rake spec 2&gt; /dev/null
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This will stop the commit if the specs don’t pass.</p>

@@ -37,14 +37,13 @@ why we chose to switch to ThinkingSphinx. We&#8217;ve recently &hellip;">
 
 </head>
 
-<body   >
+<body  >
   <header role="banner"><hgroup>
   <h1><a href="/">reinh.com</a></h1>
-  
 </hgroup>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <!-- <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
@@ -61,10 +60,10 @@ why we chose to switch to ThinkingSphinx. We&#8217;ve recently &hellip;">
   <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
-</nav>
+</nav> -->
   <div id="main">
     <div id="content">
-      <div>
+      <section>
 <article class="hentry" role="article">
   
   <header>
@@ -72,8 +71,8 @@ why we chose to switch to ThinkingSphinx. We&#8217;ve recently &hellip;">
       <h1 class="entry-title">A Thinking Man's Sphinx</h1>
     
     
-      <p class="meta">
-        
+      <h2 class="byline">
+        <time>
 
 
 
@@ -85,9 +84,10 @@ why we chose to switch to ThinkingSphinx. We&#8217;ve recently &hellip;">
   
 
 
-<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">Jul 14<span>th</span>, 2008</time>
+<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">July 14<span>th</span>, 2008</time></time>
+        by <span class='author'>Rein Henrichs</span>
         
-      </p>
+      </h2>
     
   </header>
 
@@ -146,13 +146,10 @@ vaguely similar in style to an association or named scope declaration. This is
 the usage example given in the
 <a href="http://blog.evanweaver.com/files/doc/fauna/ultrasphinx/files/README.html">README</a>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="n">is_indexed</span> <span class="ss">:fields</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="o">]</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This seems simple enough for such a simple case. We&#8217;ll see how it looks for
@@ -164,17 +161,12 @@ less trivial cases.</p>
 allow the individual index configuration options to be stated declaratively.
 The canonical example from UltraSphinx would look like this in ThinkingSphinx:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span>
 </span><span class='line'>  <span class="n">define_index</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">indexes</span> <span class="n">created_at</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">body</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The first thing you may notice is that the same index configuration is three
@@ -193,27 +185,7 @@ example of such a real world Sphinx index declaration.</p>
 <p>Here&#8217;s an example of a more realistic UltraSphinx index configuration. This is
 the type of configuration you&#8217;re likely to use on any non-trivial project.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
 </span><span class='line'>
@@ -233,7 +205,7 @@ the type of configuration you&#8217;re likely to use on any non-trivial project.
 </span><span class='line'>                              <span class="ss">:as</span>               <span class="o">=&gt;</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
 </span><span class='line'>                              <span class="ss">:sortable</span>         <span class="o">=&gt;</span>  <span class="kp">true</span><span class="p">}</span><span class="o">]</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This is about as pretty as it&#8217;s going to get - and that&#8217;s not very pretty.
@@ -245,22 +217,7 @@ increases.</p>
 
 <p>Let&#8217;s look at that same example translated to ThinkingSphinx.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:blog</span>
 </span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:category</span>
 </span><span class='line'>
@@ -275,7 +232,7 @@ increases.</p>
 </span><span class='line'>    <span class="n">where</span> <span class="s2">&quot;posts.state = &#39;published&#39;&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Not only did the number of lines decrease, the readability is far greater. I
@@ -304,26 +261,19 @@ will probably want to run the configuration task after you update the code.
 Here, for instance, is a Capistrano task to run your ThinkingSphinx
 configuration task:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">namespace</span> <span class="ss">:sphinx</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;Generate the ThinkingSphinx configuration file&quot;</span>
 </span><span class='line'>  <span class="n">task</span> <span class="ss">:configure</span> <span class="k">do</span>
 </span><span class='line'>    <span class="n">run</span> <span class="s2">&quot;cd </span><span class="si">#{</span><span class="n">release_path</span><span class="si">}</span><span class="s2"> &amp;&amp; rake thinking_sphinx:configure&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>You&#8217;ll want to have this task run after each deployment:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">after</span> <span class="s2">&quot;deploy:update_code&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx:configure&quot;</span>
+</span></code></pre></div></figure>
 
 
 <p>You can create other tasks relatively easily for reindexing and managing the
@@ -372,105 +322,43 @@ five-fold:</p>
 
 
   <footer>
-    <p class="meta">
-      
+    <div class="meta">
+      <span class='author'>
   
 
 <span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+</span>
+      &#183;
+      <time>
 
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">July 14<span>th</span>, 2008</time></time>
+      &#183;
       
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-07-14T00:00:00-07:00" pubdate data-updated="true">Jul 14<span>th</span>, 2008</time>
-      
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/07/14/a-thinking-mans-sphinx.html" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
+    </div>
+    <div class="meta">
       
         <a class="basic-alignment left" href="/blog/2008/04/18/git-push-just-the-tip.html" title="Previous Post: Git Push: Just The Tip">&laquo; Git Push: Just The Tip</a>
       
       
         <a class="basic-alignment right" href="/blog/2008/07/17/ruby-patterns-query-method.html" title="Next Post: Ruby Patterns: Query Method">Ruby Patterns: Query Method &raquo;</a>
       
-    </p>
+    </div>
   </footer>
 </article>
 
-</div>
-
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
-      </li>
-    
-  </ul>
 </section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("reinh", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
 
     </div>
   </div>

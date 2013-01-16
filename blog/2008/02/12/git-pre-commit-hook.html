@@ -37,14 +37,13 @@ commit. This can be done with a simple git hook. Preventing your developers &hel
 
 </head>
 
-<body   >
+<body  >
   <header role="banner"><hgroup>
   <h1><a href="/">reinh.com</a></h1>
-  
 </hgroup>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <!-- <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
@@ -61,10 +60,10 @@ commit. This can be done with a simple git hook. Preventing your developers &hel
   <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
-</nav>
+</nav> -->
   <div id="main">
     <div id="content">
-      <div>
+      <section>
 <article class="hentry" role="article">
   
   <header>
@@ -72,8 +71,8 @@ commit. This can be done with a simple git hook. Preventing your developers &hel
       <h1 class="entry-title">Simple Git Continuous Integration</h1>
     
     
-      <p class="meta">
-        
+      <h2 class="byline">
+        <time>
 
 
 
@@ -85,9 +84,10 @@ commit. This can be done with a simple git hook. Preventing your developers &hel
   
 
 
-<time datetime="2008-02-12T00:00:00-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2008</time>
+<time datetime="2008-02-12T00:00:00-08:00" pubdate data-updated="true">February 12<span>th</span>, 2008</time></time>
+        by <span class='author'>Rein Henrichs</span>
         
-      </p>
+      </h2>
     
   </header>
 
@@ -103,11 +103,9 @@ commit. This can be done with a simple git hook. Preventing your developers
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
 </span><span class='line'>rake spec 2&gt; /dev/null
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This will stop the commit if the specs don’t pass.</p>
@@ -126,103 +124,41 @@ that runs an abridged set of core specs instead.</p>
 
 
   <footer>
-    <p class="meta">
-      
+    <div class="meta">
+      <span class='author'>
   
 
 <span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+</span>
+      &#183;
+      <time>
 
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-12T00:00:00-08:00" pubdate data-updated="true">February 12<span>th</span>, 2008</time></time>
+      &#183;
       
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-02-12T00:00:00-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2008</time>
-      
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/02/12/git-pre-commit-hook.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/02/12/git-pre-commit-hook.html" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
+    </div>
+    <div class="meta">
       
       
         <a class="basic-alignment right" href="/blog/2008/04/09/customize-textile-tags-for-great-justice.html" title="Next Post: Custom Textile Tags For Great Justice">Custom Textile Tags For Great Justice &raquo;</a>
       
-    </p>
+    </div>
   </footer>
 </article>
 
-</div>
-
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
-      </li>
-    
-  </ul>
 </section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("reinh", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
 
     </div>
   </div>

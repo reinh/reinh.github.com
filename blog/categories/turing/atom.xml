@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Turing | reinh.com]]></title>
   <link href="http://reinh.github.com/blog/categories/turing/atom.xml" rel="self"/>
   <link href="http://reinh.github.com/"/>
-  <updated>2013-01-15T15:14:10-08:00</updated>
+  <updated>2013-01-15T18:41:58-08:00</updated>
   <id>http://reinh.github.com/</id>
   <author>
     <name><![CDATA[Rein Henrichs]]></name>
@@ -18,12 +18,13 @@
     <link href="http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html"/>
     <updated>2011-09-03T17:41:00-07:00</updated>
     <id>http://reinh.github.com/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1</id>
-    <content type="html"><![CDATA[<p>To better understand Turing's machine and its contributions to mathematics and
-computer science, we will build a simulator in Ruby. This simulator will take a
-description of the machine's configuration, create a model of the machine, and
-run through its steps. We will be able to observe the action of the head and
-changes to the tape at each step. Hopefully this will serve to illuminate some
-aspects of Turing's machine that might otherwise be less accessible.</p>
+    <content type="html"><![CDATA[<p><span class='caps'>To better understand</span> Turing's machine and its contributions
+to mathematics and computer science, we will build a simulator in Ruby. This
+simulator will take a description of the machine's configuration, create a
+model of the machine, and run through its steps. We will be able to observe the
+action of the head and changes to the tape at each step. Hopefully this will
+serve to illuminate some aspects of Turing's machine that might otherwise be
+less accessible.</p>
 
 <!--more-->
 
@@ -31,7 +32,7 @@ aspects of Turing's machine that might otherwise be less accessible.</p>
 <p>Although the Turing machine is often thought of as prefiguring later computer
 science innovations such as the state machine, its original purpose was quite
 different. Turing created his machine in an attempt to understand the limits of
-mechanical computation. That is to say, the limits of <em>computability</em>. The
+mechanical computation, i.e., the limits of <em>computability</em>. The
 paper that introduced the Turing machine, published in 1936, refers to
 "computable numbers" and their use in solving David Hilbert's <em><a href="http://en.wikipedia.org/wiki/Entscheidungsproblem">Entscheidungsproblem</a></em>, or
 "decision problem".</p>
@@ -115,14 +116,10 @@ machine, which computes the sequence <em>0 1 0 1 0 1&hellip;</em>. This machine'
 the Turing machine's instructions. In this format, the instructions look like
 this:</p>
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing's First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>b, None, P0R, c
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing's First Example</span><a href='https://github.com/reinh/turing/blob/master/examples/0101010101_simple.turing'>on github.com </a></figcaption><div class="highlight"><pre><code class=''><span class='line'>b, None, P0R, c
 </span><span class='line'>c, None, R,   e
 </span><span class='line'>e, None, P1R, f
-</span><span class='line'>f, None, R,   b</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span><span class='line'>f, None, R,   b</span></code></pre></div></figure></notextile></div></p>
 
 <p>The m-configurations (instructions) in my machines will begin with <em>b</em>, just as Turing's did. (I believe he used <em>b</em> for <em>begin</em>.)</p>
 
@@ -146,19 +143,13 @@ represented as <code>nil</code> and the integers <code>0</code> and <code>1</cod
 <p>Here is our Ruby representation of the above instruction list:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing's First Example (Ruby)  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="o">[</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:b</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">0</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:c</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:c</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:e</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:e</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:print</span><span class="p">,</span> <span class="mi">1</span> <span class="o">]</span><span class="p">,</span> <span class="o">[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span> <span class="ss">:f</span> <span class="o">]</span><span class="p">,</span>
 </span><span class='line'>  <span class="o">[</span> <span class="ss">:f</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">[[</span> <span class="ss">:right</span> <span class="o">]]</span><span class="p">,</span>                <span class="ss">:b</span> <span class="o">]</span>
 </span><span class='line'><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <h2>Parsing An Instruction</h2>
 
@@ -176,19 +167,7 @@ instruction lines. This in turn will need to parse (lex) individual tokens into 
 representation. We'll start there:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_token()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;case token</span>
@@ -200,7 +179,7 @@ representation. We'll start there:</p>
 </span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p>This will take a token like "None" and return its Ruby representation, in this
 case <code>nil</code>. Bits will be converted to Ruby Integers (close enough). Characters
@@ -211,22 +190,7 @@ will lex the operation string and turn it into a list of operation tuples (as
 described above).</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_operations()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">parse_operations</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;actions.scan(/</span><span class="n">P</span><span class="o">.|</span><span class="n">R</span><span class="o">|</span><span class="n">L</span><span class="o">|</span><span class="n">E</span><span class="o">/</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">action</span><span class="o">|</span>
@@ -241,36 +205,14 @@ described above).</p>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p>Now we can parse each instruction line by converting tokens with <code>parse_token</code>
 and converting the operations with <code>parse_operations</code> (which, of course, uses
 <code>parse_token</code> itself to lex the tokens it scans):</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_instruction()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="ss">Parser</span><span class="p">:</span><span class="ss">:Line</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@line = line</span>
@@ -280,7 +222,8 @@ and converting the operations with <code>parse_operations</code> (which, of cour
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">def</span> <span class="nf">parse_instruction</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;state, symbol, operations, end_state = @line.split(&quot;,&quot;).map{|e| e.strip}</span>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;tokens = @line.split(&quot;,&quot;).map &amp;amp;:strip</span>
+</span><span class='line'><span class="sr">state, symbol, operations, end_state = tokens</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">state      = parse_token(state)</span>
 </span><span class='line'><span class="sr">symbol     = parse_token(symbol)</span>
@@ -292,7 +235,7 @@ and converting the operations with <code>parse_operations</code> (which, of cour
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <h2>Using A Struct For Instructions</h2>
 
@@ -304,43 +247,34 @@ property of duck typing as arrays (through the use of <code>to_ary</code>). You 
 splat them, which will come in handy later.</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Turing::Machine::Instruction  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:state</span><span class="p">,</span> <span class="ss">:symbol</span><span class="p">,</span> <span class="ss">:operations</span><span class="p">,</span> <span class="ss">:end_state</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span> <span class="o">=</span> <span class="no">Struct</span><span class="o">.</span><span class="n">new</span> <span class="ss">:state</span><span class="p">,</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;                                      :symbol,</span>
+</span><span class='line'><span class="sr">                                      :operations,</span>
+</span><span class='line'><span class="sr">                                      :end_state</span>
+</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;class Turing::Parser::Line</span>
 </span><span class='line'><span class="sr">  def parse_instruction&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">.</span><span class="n">strip</span><span class="p">}</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">tokens</span> <span class="o">=</span> <span class="vi">@line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="ss">:strip</span>
+</span><span class='line'><span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span> <span class="o">=</span> <span class="n">tokens</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">state</span>      <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 </span><span class='line'><span class="n">symbol</span>     <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
 </span><span class='line'><span class="n">operations</span> <span class="o">=</span> <span class="n">parse_operations</span><span class="p">(</span><span class="n">operations</span><span class="p">)</span>
 </span><span class='line'><span class="n">end_state</span>  <span class="o">=</span> <span class="n">parse_token</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
 </span><span class='line'>
-</span><span class='line'><span class="ss">Turing</span><span class="p">:</span><span class="ss">:Machine</span><span class="o">::</span><span class="no">Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">operations</span><span class="p">,</span> <span class="n">end_state</span>
+</span><span class='line'><span class="ss">Machine</span><span class="p">:</span><span class="ss">:Instruction</span><span class="o">.</span><span class="n">new</span> <span class="n">state</span><span class="p">,</span>
+</span><span class='line'>                         <span class="n">symbol</span><span class="p">,</span>
+</span><span class='line'>                         <span class="n">operations</span><span class="p">,</span>
+</span><span class='line'>                         <span class="n">end_state</span>
 </span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <h2>Parsing The Machine Specification</h2>
 
@@ -348,22 +282,7 @@ splat them, which will come in handy later.</p>
 just a matter of mapping lines to their parsed version:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>parse_specification()  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Turing</span><span class="o">::</span><span class="no">Parser</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">machine_spec</span><span class="p">)</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@machine_spec = machine_spec</span>
@@ -373,12 +292,14 @@ just a matter of mapping lines to their parsed version:</p>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">def</span> <span class="nf">parse_specification</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@machine_spec.split(&quot;\n&quot;).map { |line| Line.new(line).parse_instruction }</span>
+</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@machine_spec.split(&quot;\n&quot;).map do |line|</span>
+</span><span class='line'><span class="sr">  Line.new(line).parse_instruction</span>
+</span><span class='line'><span class="sr">end</span>
 </span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <h2>That's (Not) All, Folks</h2>
 

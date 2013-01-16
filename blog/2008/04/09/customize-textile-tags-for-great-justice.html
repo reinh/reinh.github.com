@@ -38,14 +38,13 @@ the inimitable &hellip;">
 
 </head>
 
-<body   >
+<body  >
   <header role="banner"><hgroup>
   <h1><a href="/">reinh.com</a></h1>
-  
 </hgroup>
 
 </header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <!-- <nav role="navigation"><ul class="subscription" data-subscription="rss">
   <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
@@ -62,10 +61,10 @@ the inimitable &hellip;">
   <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
-</nav>
+</nav> -->
   <div id="main">
     <div id="content">
-      <div>
+      <section>
 <article class="hentry" role="article">
   
   <header>
@@ -73,8 +72,8 @@ the inimitable &hellip;">
       <h1 class="entry-title">Custom Textile Tags for Great Justice</h1>
     
     
-      <p class="meta">
-        
+      <h2 class="byline">
+        <time>
 
 
 
@@ -86,9 +85,10 @@ the inimitable &hellip;">
   
 
 
-<time datetime="2008-04-09T00:00:00-07:00" pubdate data-updated="true">Apr 9<span>th</span>, 2008</time>
+<time datetime="2008-04-09T00:00:00-07:00" pubdate data-updated="true">April 9<span>th</span>, 2008</time></time>
+        by <span class='author'>Rein Henrichs</span>
         
-      </p>
+      </h2>
     
   </header>
 
@@ -114,19 +114,13 @@ the RedCloth engine.</p>
 rest as an exercise for the gentle reader. The html we&#8217;re trying to create
 looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;img&quot;</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;figure-1-1&quot;</span><span class="o">&gt;</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="n">div</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;img&quot;</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;figure-1-1&quot;</span><span class="o">&gt;</span>
 </span><span class='line'>  <span class="o">&lt;</span><span class="n">a</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;fig&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;/images/image.jpb&quot;</span><span class="o">&gt;</span>
 </span><span class='line'>    <span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;/images/thumbs/image.jpg&quot;</span> <span class="n">alt</span><span class="o">=</span><span class="s2">&quot;Figure 1.1&quot;</span> <span class="sr">/&gt;</span>
 </span><span class='line'><span class="sr">  &lt;/</span><span class="n">a</span><span class="o">&gt;</span>
 </span><span class='line'>  <span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="no">Figure</span> <span class="mi">1</span><span class="o">.</span><span class="mi">1</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'><span class="sr">&lt;/</span><span class="n">div</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>The tag we want to use to create it looks like this:</p>
@@ -137,25 +131,7 @@ looks like this:</p>
 <p>That&#8217;s quite a bit shorter and more elegant. Jumping right in to the good
 stuff, the method definition for our new tag looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">textile_fig</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">atts</span><span class="p">,</span> <span class="n">cite</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">textile_fig</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">atts</span><span class="p">,</span> <span class="n">cite</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
 </span><span class='line'>  <span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
 </span><span class='line'>  <span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
 </span><span class='line'>    <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
@@ -173,32 +149,25 @@ stuff, the method definition for our new tag looks like this:</p>
 </span><span class='line'><span class="sh">  &lt;/div&gt;</span>
 </span><span class='line'><span class="no">  TAG</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>Let&#8217;s break that down.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">span_class</span> <span class="o">=</span> <span class="s2">&quot;img &quot;</span>
 </span><span class='line'><span class="k">if</span> <span class="n">atts</span> <span class="o">=~</span> <span class="sr">/class=&quot;([^\&quot;]+)&quot;/</span>
 </span><span class='line'>  <span class="n">span_class</span> <span class="o">+=</span> <span class="vg">$1</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This adds any classes in atts (in the form of <code>class="foo"</code>) to the base class,
 img.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><pre><code class='ruby'><span class='line'><span class="p">(</span><span class="n">figure_number</span><span class="p">,</span> <span class="n">img_url</span><span class="p">)</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">w</span><span class="o">|</span> <span class="n">w</span><span class="o">.</span><span class="n">strip</span> <span class="p">}</span>
 </span><span class='line'><span class="n">figure_name</span> <span class="o">=</span> <span class="s2">&quot;Figure </span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span class='line'><span class="n">figure_id</span> <span class="o">=</span> <span class="s2">&quot;figure-</span><span class="si">#{</span><span class="n">figure_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">tr</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
+</span></code></pre></div></figure>
 
 
 <p>This breaks <code>fig 1.1 | image.jpg</code> down into two parts by splitting on the <code>|</code>
@@ -211,105 +180,43 @@ great justice, of course).</p>
 
 
   <footer>
-    <p class="meta">
-      
+    <div class="meta">
+      <span class='author'>
   
 
 <span class="byline author vcard">Posted by <span class="fn">Rein Henrichs</span></span>
+</span>
+      &#183;
+      <time>
 
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-04-09T00:00:00-07:00" pubdate data-updated="true">April 9<span>th</span>, 2008</time></time>
+      &#183;
       
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-04-09T00:00:00-07:00" pubdate data-updated="true">Apr 9<span>th</span>, 2008</time>
-      
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://reinh.github.com/blog/2008/04/09/customize-textile-tags-for-great-justice.html" data-via="reinh" data-counturl="http://reinh.github.com/blog/2008/04/09/customize-textile-tags-for-great-justice.html" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
+    </div>
+    <div class="meta">
       
         <a class="basic-alignment left" href="/blog/2008/02/12/git-pre-commit-hook.html" title="Previous Post: Simple Git Continuous Integration">&laquo; Simple Git Continuous Integration</a>
       
       
         <a class="basic-alignment right" href="/blog/2008/04/18/git-push-just-the-tip.html" title="Next Post: Git Push: Just The Tip">Git Push: Just The Tip &raquo;</a>
       
-    </p>
+    </div>
   </footer>
 </article>
 
-</div>
-
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2011/09/03/building-a-turing-machine-simulator-with-ruby-part-1.html">Building a Turing Machine Simulator With Ruby (Part&nbsp;1)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/09/21/ch-ch-ch-changes.html">Ch-Ch-Ch-Changes</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/04/17/simplify-your-dev-environment-with-passenger-pane.html">Simplify Your Dev Environment With Passenger&nbsp;Pane</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2008/09/12/story-driven-development-with-rails.html">Story Driven Development With&nbsp;Rails</a>
-      </li>
-    
-  </ul>
 </section>
-
-
-<section>
-  <h1>Latest Tweets</h1>
-  <ul id="tweets">
-    <li class="loading">Status updating...</li>
-  </ul>
-  <script type="text/javascript">
-    $.domReady(function(){
-      getTwitterFeed("reinh", 4, false);
-    });
-  </script>
-  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
-  
-    <a href="http://twitter.com/reinh" class="twitter-follow-button" data-show-count="false">Follow @reinh</a>
-  
-</section>
-
-
-
-
-
-  
-</aside>
-
 
     </div>
   </div>

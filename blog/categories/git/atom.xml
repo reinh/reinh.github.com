@@ -4,7 +4,7 @@
   <title><![CDATA[Category: git | reinh.com]]></title>
   <link href="http://reinh.github.com/blog/categories/git/atom.xml" rel="self"/>
   <link href="http://reinh.github.com/"/>
-  <updated>2013-01-15T15:14:10-08:00</updated>
+  <updated>2013-01-15T18:41:58-08:00</updated>
   <id>http://reinh.github.com/</id>
   <author>
     <name><![CDATA[Rein Henrichs]]></name>
@@ -18,7 +18,7 @@
     <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
     <updated>2009-03-02T00:00:00-08:00</updated>
     <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
-    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+    <content type="html"><![CDATA[<p><span class='caps'>An efficient workflow</span> for developers in Agile teams that handles features and
 bugs while keeping a clean and sane history.</p>
 
 <p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our

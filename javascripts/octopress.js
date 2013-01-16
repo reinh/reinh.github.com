@@ -55,6 +55,7 @@ function testFeatures() {
 }
 
 function addCodeLineNumbers() {
+  return false;
   if (navigator.appName === 'Microsoft Internet Explorer') { return; }
   $('div.gist-highlight').each(function(code) {
     var tableStart = '<table><tbody><tr><td class="gutter">',
@@ -120,9 +121,9 @@ $.domReady(function() {
   testFeatures();
   wrapFlashVideos();
   flashVideoFallback();
-  addCodeLineNumbers();
-  getNav();
-  addSidebarToggler();
+  // addCodeLineNumbers();
+  // getNav();
+  // addSidebarToggler();
 });
 
 // iOS scaling bug fix

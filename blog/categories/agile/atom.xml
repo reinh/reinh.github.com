@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Agile | reinh.com]]></title>
   <link href="http://reinh.github.com/blog/categories/agile/atom.xml" rel="self"/>
   <link href="http://reinh.github.com/"/>
-  <updated>2013-01-15T15:14:10-08:00</updated>
+  <updated>2013-01-15T18:41:58-08:00</updated>
   <id>http://reinh.github.com/</id>
   <author>
     <name><![CDATA[Rein Henrichs]]></name>
@@ -18,7 +18,7 @@
     <link href="http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html"/>
     <updated>2009-03-02T00:00:00-08:00</updated>
     <id>http://reinh.github.com/blog/2009/03/02/a-git-workflow-for-agile-teams</id>
-    <content type="html"><![CDATA[<p>An efficient workflow for developers in Agile teams that handles features and
+    <content type="html"><![CDATA[<p><span class='caps'>An efficient workflow</span> for developers in Agile teams that handles features and
 bugs while keeping a clean and sane history.</p>
 
 <p>At <a href="http://hashrocket.com">Hashrocket</a> we use git both internally and in our
@@ -253,7 +253,7 @@ commit first.</p>
     <link href="http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails.html"/>
     <updated>2008-09-12T00:00:00-07:00</updated>
     <id>http://reinh.github.com/blog/2008/09/12/story-driven-development-with-rails</id>
-    <content type="html"><![CDATA[<p>As a follow up on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
+    <content type="html"><![CDATA[<p><span class='caps'>As a follow up</span> on <a href="http://reinh.com/blog/2008/08/29/incremental-stories-and-micro-releases.html">writing incremental stories</a>,
 we're going to take the first story and walk through a behavior driven
 development process to implement it in a simple Rails application.</p>
 
@@ -267,20 +267,7 @@ with just enough code to make them pass.</p>
 <p>Let's review our first story:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+<div class="highlight"><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
 </span><span class='line'>So that I can find a project that interests me&lt;/p>
 </span><span class='line'>
 </span><span class='line'>&lt;p>Acceptance:&lt;/p>
@@ -292,7 +279,7 @@ with just enough code to make them pass.</p>
 </span><span class='line'>&lt;/ul>
 </span><span class='line'>
 </span><span class='line'>
-</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></div></figure></notextile></div></p>
 
 <p>At this point, let's assume that this story is on top of our current iteration.
 First, we'll need to review the story for any missing information and
@@ -303,23 +290,7 @@ project's author name and title and that the title will need to link to that
 project's page. Let's update the story appropriately.</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>Story #1 </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
+<div class="highlight"><pre><code class=''><span class='line'>As A User I Want To View A List Of Projects
 </span><span class='line'>So that I can find a project that interests me&lt;/p>
 </span><span class='line'>
 </span><span class='line'>&lt;p>Acceptance:&lt;/p>
@@ -334,7 +305,7 @@ project's page. Let's update the story appropriately.</p>
 </span><span class='line'>&lt;/ul>
 </span><span class='line'>
 </span><span class='line'>
-</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span><span class='line'>&lt;p>Cost: 1 Point</span></code></pre></div></figure></notextile></div></p>
 
 <p>Now that the story is complete, deliverable and acceptable, we can begin work
 on the new feature. A implementation plan should be forming in your head. Now
@@ -360,22 +331,7 @@ Starting at the top, we will need to load all of the projects. Let's write a
 test for this:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/controllers/projects_controller_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="no">ProjectsController</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">describe</span> <span class="s2">&quot;getting a list of products&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;it &quot;loads all the projects&quot; do</span>
@@ -390,7 +346,7 @@ test for this:</p>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><em>Note:</em> Stubbing the call to <code>Project.all</code> has the immediate benefit of
 eliminating the database from our test but is potentially more brittle since we
@@ -407,15 +363,7 @@ populating the database with valid records in known states.</p>
 <p>Now we can write the implementation:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/controllers/projects_controller.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="no">ApplicationController</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">ProjectsController</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="no">ApplicationController</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">index</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@projects = Project.all</span>
@@ -423,30 +371,12 @@ populating the database with valid records in known states.</p>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p>Then we have to display a list of projects. We'll write a view test to cover this:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="n">before</span><span class="p">(</span><span class="ss">:each</span><span class="p">)</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;@project = mock_model(Project)</span>
@@ -464,22 +394,12 @@ populating the database with valid records in known states.</p>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p>And the implementation:</p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
@@ -489,7 +409,7 @@ populating the database with valid records in known states.</p>
 </span><span class='line'>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><strong>Note:</strong> View tests can often be brittle. They can be made less brittle by
 testing only for semantically appropriate tags, classes and ids whenever
@@ -500,17 +420,7 @@ to write robust view tests -- and is also a great practice for its own sake.
 <h3>Show Title for Each Project</h3>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the title for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
@@ -520,22 +430,10 @@ to write robust view tests -- and is also a great practice for its own sake.
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
@@ -547,22 +445,12 @@ to write robust view tests -- and is also a great practice for its own sake.
 </span><span class='line'>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <h3>Show Author Name for Each Project</h3>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should show the author name for each project&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
@@ -572,23 +460,10 @@ to write robust view tests -- and is also a great practice for its own sake.
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
@@ -601,7 +476,7 @@ to write robust view tests -- and is also a great practice for its own sake.
 </span><span class='line'>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><strong>Note:</strong> We are using an accessor on our project model, <code>Project#author_name</code>.
 There's a good chance that this name will be taken from an associated User or
@@ -619,18 +494,7 @@ makes testing harder.</p>
 <h3>Project Title Links to the Project's Page</h3>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>spec/views/projects/index.html.erb_spec.rb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
+ <div class="highlight"><pre><code class='ruby'><span class='line'><span class="n">describe</span> <span class="s2">&quot;/projects/index&quot;</span> <span class="k">do</span>
 </span><span class='line'>  <span class="c1"># SNIP&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="n">it</span> <span class="s2">&quot;should have project titles that link to the project page&quot;</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
@@ -641,23 +505,10 @@ makes testing harder.</p>
 </span><span class='line'>
 </span><span class='line'><span class="sr">&lt;p&gt;  end</span>
 </span><span class='line'><span class="sr">end</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>app/views/projects/index.html.erb  </span></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
+ <div class="highlight"><pre><code class='rhtml'><span class='line'><span class="nt">&lt;/p&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;ul&gt;</span>
 </span><span class='line'>  <span class="err">&lt;</span>%% @projects.each do |project| <span class="err">%&gt;</span>
@@ -670,7 +521,7 @@ makes testing harder.</p>
 </span><span class='line'>
 </span><span class='line'>
 </span><span class='line'><span class="nt">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</span></code></pre></div></figure></notextile></div></p>
 
 <p>The story is now about half complete. I'll leave pagination and default sort
 order as an exercise for the user. In fact, these could also have been broken
